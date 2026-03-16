@@ -1,0 +1,3660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=4.0, user-scalable=yes">
+<title>SNAKE ARENA ULTRA</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&family=Lexend:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
+:root{--cyan:#00ffff;--mag:#ff00ff;--yel:#ffff00;--grn:#00ff88;--red:#ff2244;--bg:#060010;--panel:#0d0020;--pix:'Press Start 2P',monospace;--vt:'VT323',monospace;--lex:'Lexend',sans-serif;}
+body{background:var(--bg);font-family:var(--vt);overflow:auto;min-height:100vh;width:100%;color:#fff;}
+body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.12) 2px,rgba(0,0,0,0.12) 4px);
+  pointer-events:none;z-index:9999;}
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+  background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,0.6) 100%);pointer-events:none;z-index:9998;}
+.screen{display:none;width:100%;min-height:100vh;}
+.screen.active{display:flex;}
+#gameScreen{position:fixed;top:0;left:0;width:100%;height:100%;display:none;touch-action:none;}
+#gameScreen.active{display:block;}
+
+/* MENU */
+#menuScreen{flex-direction:column;align-items:center;justify-content:flex-start;padding:60px 20px 40px;
+  background:linear-gradient(rgba(0,0,40,0.82),rgba(0,0,10,0.95)),
+  repeating-linear-gradient(90deg,transparent,transparent 59px,rgba(0,255,255,0.035) 59px,rgba(0,255,255,0.035) 60px),
+  repeating-linear-gradient(0deg,transparent,transparent 59px,rgba(0,255,255,0.035) 59px,rgba(0,255,255,0.035) 60px);}
+.menu-snake{font-size:68px;margin-bottom:10px;animation:floatS 3s ease-in-out infinite;filter:drop-shadow(0 0 22px rgba(0,255,255,0.65));}
+@keyframes floatS{0%,100%{transform:translateY(0) rotate(-5deg);}50%{transform:translateY(-18px) rotate(5deg);}}
+.menu-title{font-family:var(--pix);font-size:clamp(20px,5vw,42px);color:var(--cyan);text-shadow:0 0 22px var(--cyan),0 0 55px rgba(0,255,255,0.35);letter-spacing:4px;}
+.menu-sub{font-family:var(--pix);font-size:clamp(9px,2vw,17px);color:var(--mag);text-shadow:0 0 14px var(--mag);letter-spacing:9px;margin-top:6px;}
+.menu-best{font-family:var(--pix);font-size:8px;color:rgba(255,255,100,0.75);margin:28px 0;text-shadow:0 0 8px rgba(255,255,0,0.4);}
+.mbtn{font-family:var(--pix);font-size:clamp(8px,1.8vw,12px);padding:14px 26px;border:2px solid;background:transparent;cursor:pointer;width:270px;margin:6px;transition:all 0.1s;letter-spacing:1px;}
+.mbtn.pri{border-color:var(--grn);color:var(--grn);box-shadow:0 0 14px rgba(0,255,136,0.25);}
+.mbtn.pri:hover{background:rgba(0,255,136,0.09);box-shadow:0 0 28px rgba(0,255,136,0.55);}
+.mbtn.sec{border-color:rgba(255,255,255,0.28);color:rgba(255,255,255,0.55);}
+.mbtn.sec:hover{background:rgba(255,255,255,0.05);}
+.diff-row{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;justify-content:center;}
+.diff-btn{font-family:var(--pix);font-size:clamp(6px,1.2vw,9px);padding:7px 10px;border:2px solid rgba(255,255,255,0.25);background:transparent;color:rgba(255,255,255,0.55);cursor:pointer;transition:all 0.1s;}
+.diff-btn.active{border-color:var(--yel);color:var(--yel);background:rgba(255,255,0,0.07);box-shadow:0 0 12px rgba(255,255,0,0.25);}
+.diff-btn:hover{background:rgba(255,255,255,0.04);}
+.insert{font-family:var(--pix);font-size:8px;color:var(--yel);animation:blink 1s step-end infinite;margin-top:22px;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+
+/* SELECT */
+#selectScreen{flex-direction:column;overflow:hidden;height:100vh;position:fixed;top:0;left:0;width:100%;
+  background:repeating-linear-gradient(-45deg,rgba(80,0,80,0.035),rgba(80,0,80,0.035) 10px,transparent 10px,transparent 20px),
+  linear-gradient(180deg,#080018,#020010);}
+.sel-hdr{text-align:center;padding:10px 6px;border-bottom:2px solid var(--mag);box-shadow:0 0 18px rgba(255,0,255,0.28);flex-shrink:0;}
+.sel-name-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:7px;}
+.sel-name-lbl{font-family:var(--pix);font-size:7px;color:rgba(255,0,255,0.7);white-space:nowrap;}
+.sel-name-input{font-family:var(--lex);font-size:13px;font-weight:700;
+  background:rgba(255,255,255,0.06);border:2px solid rgba(255,0,255,0.4);
+  color:#fff;padding:5px 10px;width:140px;outline:none;text-transform:uppercase;
+  letter-spacing:1px;border-radius:3px;}
+.sel-name-input::placeholder{color:rgba(255,255,255,0.25);font-weight:400;}
+.sel-name-input:focus{border-color:rgba(255,0,255,0.9);box-shadow:0 0 12px rgba(255,0,255,0.3);}
+.det-role-bar{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 2px;}
+.det-role-pip{font-family:var(--pix);font-size:6px;padding:3px 7px;border-radius:3px;
+  border:1px solid;letter-spacing:0.5px;}
+.sel-title{font-family:var(--pix);font-size:clamp(8px,2vw,15px);
+  background:linear-gradient(90deg,#ff0080,#ff8000,#ffff00,#00ff80,#00ffff,#8000ff,#ff0080);
+  background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:rb 3s linear infinite;}
+@keyframes rb{0%{background-position:0% center;}100%{background-position:200% center;}}
+.sel-body{display:flex;flex:1;overflow:hidden;min-height:0;height:0;}
+.snake-grid{flex:0 0 auto;width:42%;overflow-y:auto;overflow-x:hidden;padding:6px 5px;display:flex;flex-direction:column;gap:5px;-webkit-overflow-scrolling:touch;border-right:2px solid rgba(255,0,255,0.18);}
+.scard{border:2px solid rgba(255,255,255,0.18);background:rgba(0,0,28,0.88);cursor:pointer;display:flex;flex-direction:row;align-items:center;padding:8px 10px;gap:10px;transition:all 0.15s;flex-shrink:0;min-height:62px;border-radius:6px;}
+.scard:hover{background:rgba(0,0,40,0.9);}
+.scard.sel{animation:cPulse 0.85s ease-in-out infinite alternate;border:2px solid rgba(255,255,255,0.9)!important;background:rgba(255,255,255,0.09)!important;}
+@keyframes cPulse{from{box-shadow:0 0 0px rgba(255,255,255,0.5),0 0 14px rgba(255,255,255,0.4),inset 0 0 10px rgba(255,255,255,0.06);}to{box-shadow:0 0 0px rgba(255,255,255,0.9),0 0 28px rgba(255,255,255,0.8),0 0 52px rgba(255,255,255,0.35),inset 0 0 20px rgba(255,255,255,0.12);}}
+.sc-em{font-size:clamp(20px,5vw,32px);flex-shrink:0;}
+.sc-info{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.sc-nm{font-family:var(--lex);font-size:clamp(9px,2vw,12px);color:#ffffff;font-weight:600;text-align:left;line-height:1.45;text-shadow:0 0 8px rgba(255,255,255,0.7),0 1px 2px rgba(0,0,0,0.9);letter-spacing:0.3px;}
+.sc-cls{font-family:var(--lex);font-size:clamp(11px,2vw,14px);font-weight:700;text-align:left;text-shadow:0 0 6px currentColor,0 1px 3px rgba(0,0,0,0.9);}
+.sc-badge{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;}
+.card-snake-cv{flex-shrink:0;border-radius:3px;background:rgba(0,0,0,0.3);}
+.sc-pip{font-family:var(--pix);font-size:5px;padding:2px 4px;border-radius:2px;
+  border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.06);
+  color:rgba(255,255,255,0.7);white-space:nowrap;letter-spacing:0.3px;}
+.sc-pip.hp{border-color:rgba(255,80,80,0.5);color:#ff8888;}
+.sc-pip.spd{border-color:rgba(0,220,255,0.5);color:#00ddff;}
+.sc-pip.role{border-color:rgba(255,200,0,0.4);color:#ffcc66;}
+.snake-det{flex:1;padding:10px 12px;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:8px;min-width:0;-webkit-overflow-scrolling:touch;}
+.det-nm{font-family:var(--pix);font-size:clamp(7px,1.4vw,12px);text-shadow:0 0 10px currentColor;}
+.det-cls{font-family:var(--lex);font-size:14px;opacity:0.72;margin-top:-2px;font-weight:500;}
+.stat-row{display:flex;align-items:center;gap:6px;}
+.stat-lbl{font-family:var(--pix);font-size:6px;width:40px;color:rgba(255,255,255,0.6);}
+.stat-bar{flex:1;height:8px;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.15);}
+.stat-fill{height:100%;position:relative;transition:width 0.35s;}
+.stat-fill::after{content:'';position:absolute;top:0;left:0;width:100%;height:50%;background:rgba(255,255,255,0.17);}
+.abox{background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.12);padding:6px;}
+.ab-type{font-family:var(--pix);font-size:5px;color:rgba(255,255,255,0.42);margin-bottom:2px;}
+.ab-nm{font-family:var(--lex);font-size:clamp(9px,2vw,11px);margin-bottom:4px;font-weight:700;letter-spacing:0.5px;}
+.ab-desc{font-family:var(--lex);font-size:clamp(13px,3.2vw,16px);color:rgba(255,255,255,0.92);line-height:1.6;letter-spacing:0.2px;}
+.clr-lbl{font-family:var(--pix);font-size:5px;color:rgba(255,255,255,0.45);margin-bottom:4px;}
+.clr-row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;}
+#colorCanvas{border-radius:50%;cursor:crosshair;border:2px solid rgba(255,255,255,0.18);flex-shrink:0;}
+.clr-preview{display:flex;flex-direction:column;align-items:center;gap:5px;}
+#colorPreview{width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,255,255,0.28);}
+.clr-hint{font-family:var(--pix);font-size:5px;color:rgba(255,255,255,0.35);text-align:center;}
+#snakePrev{border:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.5);}
+.sel-ftr{padding:10px;display:flex;justify-content:center;gap:10px;border-top:2px solid rgba(255,0,255,0.22);flex-shrink:0;background:rgba(0,0,10,0.8);}
+.fight-btn{font-family:var(--pix);font-size:clamp(9px,2vw,13px);padding:15px 36px;border:3px solid var(--grn);background:rgba(0,255,136,0.07);color:var(--grn);cursor:pointer;text-shadow:0 0 9px var(--grn);animation:fPulse 1.5s ease-in-out infinite;}
+@keyframes fPulse{0%,100%{box-shadow:0 0 11px rgba(0,255,136,0.3);}50%{box-shadow:0 0 30px rgba(0,255,136,0.6),0 0 52px rgba(0,255,136,0.18);}}
+.back-btn{font-family:var(--pix);font-size:clamp(8px,1.5vw,11px);padding:15px 20px;border:2px solid rgba(255,255,255,0.22);background:transparent;color:rgba(255,255,255,0.48);cursor:pointer;}
+
+/* GAME */
+#gameScreen{display:none;}
+#gameScreen.active{display:block;}
+#gameCanvas{position:absolute;top:0;left:0;width:100%;height:100%;}
+
+/* ══════ HUD GRID — mathematically zero-overlap ══════════════════════════
+   9 named grid areas. Each HUD element lives in exactly one cell.
+   Grid rows/cols use auto sizing so content drives height/width.
+   Overlap is physically impossible in CSS Grid.
+   ═══════════════════════════════════════════════════════════════════════ */
+.gui{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;z-index:10;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  grid-template-rows:auto auto 1fr auto;
+  grid-template-areas:
+    "tl  tc  tr"
+    "ml  mc  mr"
+    ".   .   .  "
+    ".   bc  .  ";
+  align-content:start;
+  padding:8px;
+  gap:4px;
+  box-sizing:border-box;
+}
+
+/* ── Grid cell assignments ── */
+.left-panel  { grid-area:tl; align-self:start; }
+.score-hud   { grid-area:tc; justify-self:center; align-self:start; }
+.top-right   { grid-area:tr; display:flex; flex-direction:column; align-items:flex-end; gap:4px; align-self:start; }
+.kill-hud    { grid-area:ml; align-self:start; }
+.len-hud     { grid-area:mc; justify-self:center; align-self:start;
+               background:rgba(0,0,0,0.6);padding:3px 8px;border-radius:2px; }
+.diff-hud    { grid-area:mr; justify-self:end; align-self:start; }
+.killfeed    { grid-area:ml; align-self:end; margin-top:4px; }
+
+.top-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.top-right *{pointer-events:all;}
+/* ── LEFT PANEL: flex column, no absolute positioning ── */
+
+.left-panel>*{pointer-events:all;}
+
+/* ── TOP RIGHT cell: lb + zoom + fullscreen stacked ── */
+.top-right .lb-hud,.top-right .zoom-lock-btn,.top-right .fs-btn{
+  pointer-events:all;
+}
+
+/* ── Remove all old absolute positioning from children ── */
+.score-hud,.kill-hud,.lb-hud,.len-hud,.diff-hud,.zoom-lock-btn,.fs-btn,.killfeed{
+  position:static;
+  transform:none;
+  top:auto;left:auto;right:auto;bottom:auto;
+}
+
+/* ── Compact sizing ── */
+.pause-btn{
+  font-family:var(--pix);font-size:clamp(6px,1.4vw,9px);
+  background:rgba(0,0,0,0.78);border:2px solid rgba(255,255,0,0.55);
+  color:rgba(255,255,0,0.9);padding:6px 9px;cursor:pointer;
+  box-shadow:0 0 7px rgba(255,255,0,0.18);white-space:nowrap;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* Landscape compact */
+.gui.layout-landscape{
+  grid-template-areas:
+    "tl tc tr"
+    ".  .  . ";
+  padding:4px;gap:3px;
+}
+  
+  .hp-hearts,
+  .kill-hud{display:none;}
+}
+
+.score-hud{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.72);border:2px solid var(--cyan);padding:7px 17px;box-shadow:0 0 13px rgba(0,255,255,0.28);}
+.score-num{font-family:var(--pix);font-size:clamp(13px,3vw,20px);color:var(--cyan);text-shadow:0 0 9px var(--cyan);}
+.score-best{font-family:var(--pix);font-size:6px;color:rgba(255,255,100,0.6);text-align:center;margin-top:2px;}
+.kill-hud{position:absolute;top:10px;left:90px;background:rgba(0,0,0,0.72);border:2px solid #ff4444;padding:6px 10px;box-shadow:0 0 9px rgba(255,0,0,0.28);display:flex;align-items:center;gap:5px;}
+.kill-num{font-family:var(--pix);font-size:10px;color:#ff4444;}
+.lb-hud{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.72);border:2px solid rgba(255,0,255,0.48);padding:7px 9px;min-width:130px;box-shadow:0 0 9px rgba(255,0,255,0.18);}
+.lb-title{font-family:var(--pix);font-size:6px;color:var(--mag);margin-bottom:5px;text-shadow:0 0 7px var(--mag);}
+.lb-entry{font-family:var(--lex);font-size:clamp(12px,2.8vw,15px);display:flex;justify-content:space-between;padding:1px 0;}
+.lb-entry.me{color:var(--grn);text-shadow:0 0 7px var(--grn);}
+
+
+
+
+.len-hud{position:absolute;top:82px;left:50%;transform:translateX(-50%);font-family:var(--pix);font-size:6px;color:rgba(255,255,255,0.52);background:rgba(0,0,0,0.5);padding:3px 8px;border:1px solid rgba(255,255,255,0.1);}
+
+
+
+.diff-hud{position:absolute;top:82px;right:10px;font-family:var(--pix);font-size:6px;padding:3px 7px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,0,0.28);color:rgba(255,255,0,0.7);}
+.respawn-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;display:none;z-index:50;}
+.respawn-overlay.show{display:block;}
+.resp-txt{font-family:var(--pix);font-size:clamp(12px,3vw,22px);color:var(--yel);text-shadow:0 0 16px var(--yel);animation:blink 0.4s step-end infinite;}
+.resp-sub{font-family:var(--lex);font-size:clamp(14px,3.5vw,18px);color:rgba(255,255,255,0.82);margin-top:8px;line-height:1.5;}
+.pwr-sp{font-family:var(--lex);font-size:clamp(8px,1.8vw,10px);font-weight:600;color:rgba(255,255,255,0.4);text-align:center;margin-top:2px;pointer-events:none;}
+.zoom-lock-btn{position:absolute;top:10px;right:200px;font-family:var(--pix);font-size:7px;
+  background:rgba(0,0,0,0.72);border:2px solid rgba(100,100,255,0.45);color:rgba(150,150,255,0.75);
+  padding:7px 9px;cursor:pointer;pointer-events:all;z-index:30;letter-spacing:0px;
+  box-shadow:0 0 8px rgba(100,100,255,0.15);display:flex;align-items:center;gap:4px;flex-direction:column;}
+.zoom-lock-btn.locked{border-color:rgba(0,255,255,0.7);color:var(--cyan);
+  box-shadow:0 0 14px rgba(0,255,255,0.35);animation:lockedPulse 2s ease-in-out infinite;}
+@keyframes lockedPulse{0%,100%{box-shadow:0 0 10px rgba(0,255,255,0.3);}50%{box-shadow:0 0 22px rgba(0,255,255,0.65);}}
+.zoom-lock-icon{font-size:14px;}
+.zoom-lock-val{font-size:5px;opacity:0.75;}
+.pause-btn-old-REMOVED-{display:none;box-shadow:0 0 9px rgba(255,255,0,0.18);letter-spacing:1px;}
+.pause-btn:active{transform:scale(0.95);}
+.pause-overlay{position:absolute;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.78);z-index:80;display:none;
+  align-items:center;justify-content:center;flex-direction:column;gap:18px;}
+.fs-btn{position:absolute;top:10px;right:10px;font-family:var(--pix);font-size:9px;
+  background:rgba(0,0,0,0.72);border:2px solid rgba(0,255,200,0.45);
+  color:rgba(0,255,200,0.8);padding:8px 11px;cursor:pointer;
+  pointer-events:all;z-index:30;box-shadow:0 0 9px rgba(0,255,200,0.18);
+  letter-spacing:0px;transition:all 0.15s;}
+.fs-btn:hover,.fs-btn:active{border-color:rgba(0,255,200,0.9);color:#00ffc8;
+  box-shadow:0 0 18px rgba(0,255,200,0.45);}
+.pause-overlay.show{display:flex;}
+.pause-title{font-family:var(--pix);font-size:clamp(18px,4vw,32px);color:var(--yel);
+  text-shadow:0 0 20px var(--yel);letter-spacing:4px;}
+.pause-sub{font-family:var(--lex);font-size:clamp(14px,3.5vw,18px);color:rgba(255,255,255,0.6);}
+.resume-btn{font-family:var(--pix);font-size:clamp(9px,1.8vw,13px);padding:14px 30px;
+  border:3px solid var(--grn);background:rgba(0,255,136,0.08);color:var(--grn);cursor:pointer;
+  pointer-events:all;text-shadow:0 0 9px var(--grn);animation:fPulse 1.5s ease-in-out infinite;}
+.quit-btn{font-family:var(--pix);font-size:9px;padding:10px 20px;
+  border:2px solid rgba(255,255,255,0.25);background:transparent;color:rgba(255,255,255,0.5);
+  cursor:pointer;pointer-events:all;}
+.killfeed{position:absolute;top:76px;left:175px;display:flex;flex-direction:column;gap:2px;pointer-events:none;}
+.kfe{font-family:var(--lex);font-size:clamp(12px,2.8vw,15px);background:rgba(0,0,0,0.58);padding:2px 6px;border-left:3px solid #ff4444;animation:kfIn 0.3s ease-out;transition:opacity 0.5s;}
+@keyframes kfIn{from{opacity:0;transform:translateX(-12px);}to{opacity:1;transform:none;}}
+.life-earned{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:var(--pix);font-size:clamp(11px,2.5vw,18px);
+  color:#ffffff;text-shadow:0 0 20px #ffcc00,0 0 40px #ff8800;
+  background:rgba(0,0,0,0.75);border:3px solid #ffcc00;
+  box-shadow:0 0 30px rgba(255,200,0,0.5),inset 0 0 20px rgba(255,180,0,0.1);
+  padding:12px 24px;pointer-events:none;z-index:60;display:none;
+  text-align:center;letter-spacing:2px;}
+.life-earned.show{display:block;animation:lifeFlash 2.2s ease-out forwards;}
+@keyframes lifeFlash{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(0.7);}
+  15%{opacity:1;transform:translate(-50%,-50%) scale(1.1);}
+  25%{transform:translate(-50%,-50%) scale(1);}
+  75%{opacity:1;transform:translate(-50%,-50%) scale(1);}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(0.95);}
+}
+.life-earned-sub{font-family:var(--lex);font-size:clamp(13px,3.2vw,17px);color:rgba(255,220,100,0.85);margin-top:5px;}
+
+
+
+
+
+.pwr-ready{position:absolute;bottom:60px;right:25px;font-family:var(--pix);font-size:5px;color:var(--yel);text-shadow:0 0 7px var(--yel);animation:blink 0.5s step-end infinite;pointer-events:none;display:none;}
+.boost-btn{position:absolute;bottom:60px;right:112px;width:66px;height:66px;border:2px solid rgba(255,255,255,0.32);border-radius:50%;pointer-events:all;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.65);cursor:pointer;touch-action:none;flex-direction:column;}
+.boost-btn.on{border-color:var(--cyan);box-shadow:0 0 17px rgba(0,255,255,0.5);background:rgba(0,255,255,0.09);}
+.boost-lbl{font-family:var(--pix);font-size:5px;color:rgba(255,255,255,0.6);}
+.pwr-wrap{position:absolute;bottom:50px;right:18px;pointer-events:all;touch-action:none;}
+#powerCanvas{cursor:pointer;display:block;}
+.jzone{position:absolute;width:140px;height:140px;pointer-events:all;touch-action:none;z-index:20;display:none;}
+.jzone.active{display:block;}
+.jbase{position:absolute;width:118px;height:118px;background:rgba(0,255,255,0.06);border:2px solid rgba(0,255,255,0.25);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);}
+.jhandle{position:absolute;width:44px;height:44px;background:rgba(0,255,255,0.82);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 0 13px rgba(0,255,255,0.5);}
+.jhandle.on{background:var(--cyan);box-shadow:0 0 20px rgba(0,255,255,0.88);}
+
+/* MODAL */
+.modal-bg{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.86);z-index:100;display:none;align-items:center;justify-content:center;}
+.modal-bg.active{display:flex;}
+.modal-box{background:var(--panel);border:3px solid var(--mag);box-shadow:0 0 38px rgba(255,0,255,0.38),inset 0 0 38px rgba(255,0,255,0.03);padding:26px;text-align:center;width:90%;max-width:370px;}
+.modal-title{font-family:var(--pix);font-size:clamp(14px,3.5vw,24px);color:var(--mag);text-shadow:0 0 16px var(--mag);margin-bottom:16px;animation:glitch 4s infinite;}
+@keyframes glitch{0%,88%,100%{text-shadow:0 0 16px var(--mag);transform:none;}90%{text-shadow:-3px 0 var(--cyan),3px 0 var(--mag);transform:skewX(-2deg);}93%{text-shadow:3px 0 var(--cyan),-3px 0 var(--mag);transform:skewX(2deg);}96%{text-shadow:0 0 16px var(--mag);transform:none;}}
+.final-score{font-family:var(--pix);font-size:clamp(24px,5.5vw,42px);color:var(--yel);text-shadow:0 0 18px var(--yel);margin:10px 0 3px;}
+.final-lbl{font-family:var(--pix);font-size:6px;color:rgba(255,255,255,0.42);margin-bottom:16px;}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:20px;}
+.sgcell{background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);padding:6px;}
+.sgval{font-family:var(--pix);font-size:12px;color:var(--cyan);display:block;}
+.sglbl{font-family:var(--vt);font-size:14px;color:rgba(255,255,255,0.42);}
+.mbtn2{font-family:var(--pix);font-size:8px;padding:12px 16px;border:2px solid;background:transparent;cursor:pointer;width:100%;margin-bottom:8px;transition:all 0.1s;}
+.mbtn2.pri{border-color:var(--grn);color:var(--grn);}
+.mbtn2.sec2{border-color:rgba(255,255,255,0.25);color:rgba(255,255,255,0.5);}
+.mbtn2:active{transform:scale(0.97);}
+
+/* rotate prompt removed — free rotation enabled */
+
+/* ─── HOW TO PLAY SCREEN ─────────────────────────────────────────────────── */
+#howScreen{
+  flex-direction:column;overflow:hidden;height:100vh;
+  position:fixed;top:0;left:0;width:100%;
+  background:
+    repeating-linear-gradient(-45deg,rgba(0,40,80,0.04),rgba(0,40,80,0.04) 10px,transparent 10px,transparent 20px),
+    linear-gradient(180deg,#030012,#010008);
+}
+/* header — identical to .sel-hdr */
+.how-hdr{
+  text-align:center;padding:10px 6px;
+  border-bottom:2px solid var(--cyan);
+  box-shadow:0 0 18px rgba(0,255,255,0.28);
+  flex-shrink:0;
+}
+.how-title{
+  font-family:var(--pix);font-size:clamp(8px,2vw,14px);
+  background:linear-gradient(90deg,#00ffff,#00ccff,#00ffff);
+  background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;animation:rb 4s linear infinite;
+  letter-spacing:3px;
+}
+/* scrollable body */
+.how-body{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  padding:10px 12px;display:flex;flex-direction:column;
+  min-height:0;
+}
+.how-box{width:100%;max-width:540px;margin:0 auto;display:flex;flex-direction:column;gap:0;}
+/* footer — identical to .sel-ftr */
+.how-ftr{
+  padding:10px;display:flex;justify-content:center;gap:10px;
+  border-top:2px solid rgba(0,255,255,0.22);
+  flex-shrink:0;background:rgba(0,0,10,0.85);
+}
+/* section heading */
+.how-sec{margin-bottom:14px;}
+.how-lbl{
+  font-family:var(--pix);font-size:clamp(7px,1.5vw,9px);color:var(--yel);
+  text-shadow:0 0 7px rgba(255,255,0,0.45);
+  margin-bottom:8px;letter-spacing:1px;
+  border-left:3px solid var(--yel);padding-left:8px;
+}
+/* content rows */
+.how-row{
+  display:flex;align-items:flex-start;gap:9px;
+  font-family:var(--lex);font-size:clamp(14px,3.5vw,17px);
+  color:rgba(255,255,255,0.92);line-height:1.6;
+  margin-bottom:5px;padding:6px 8px;
+  border-radius:4px;
+  background:rgba(255,255,255,0.03);
+  letter-spacing:0.3px;
+}
+.how-row b{color:#fff;font-weight:700;}
+.how-ic{font-size:17px;flex-shrink:0;width:22px;text-align:center;margin-top:1px;}
+.how-tag{
+  display:inline-block;font-family:var(--pix);font-size:5.5px;
+  background:rgba(0,255,255,0.08);border:1px solid rgba(0,255,255,0.3);
+  padding:2px 5px;border-radius:3px;color:var(--cyan);
+  vertical-align:middle;margin:0 2px;
+}
+/* divider */
+.how-hr{border:none;border-top:1px solid rgba(255,255,255,0.07);margin:10px 0;}
+/* snake class rows */
+.how-cls-row{
+  display:flex;align-items:flex-start;gap:10px;margin-bottom:7px;
+  font-family:var(--lex);font-size:clamp(14px,3.5vw,17px);
+  color:rgba(255,255,255,0.92);padding:6px 8px;
+  background:rgba(255,255,255,0.03);border-radius:4px;
+  line-height:1.55;letter-spacing:0.3px;
+}
+.how-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+/* back + play buttons — reuse existing styles */
+.how-back{
+  font-family:var(--pix);font-size:clamp(8px,1.5vw,11px);
+  padding:14px 20px;border:2px solid rgba(255,255,255,0.22);
+  background:transparent;color:rgba(255,255,255,0.48);cursor:pointer;
+}
+.how-play{
+  font-family:var(--pix);font-size:clamp(9px,1.8vw,13px);
+  padding:14px 36px;border:3px solid var(--grn);
+  background:rgba(0,255,136,0.07);color:var(--grn);cursor:pointer;
+  text-shadow:0 0 9px var(--grn);animation:fPulse 1.5s ease-in-out infinite;
+}
+
+
+/* HP — compact row */
+
+
+
+
+/* Lives — compact */
+
+
+
+
+/* Next life progress */
+
+
+
+
+
+
+/* ══ LEFT PANEL — single flex column, portrait + landscape safe ══════════ */
+
+.left-panel>*{pointer-events:all;}
+
+/* Pause btn */
+.pause-btn{
+  font-family:var(--pix);font-size:clamp(7px,1.5vw,9px);
+  background:rgba(0,0,0,0.78);border:2px solid rgba(255,255,0,0.55);
+  color:rgba(255,255,0,0.9);padding:6px 10px;cursor:pointer;
+  box-shadow:0 0 7px rgba(255,255,0,0.18);white-space:nowrap;
+}
+/* HP */
+.hp-hud{
+  background:rgba(0,0,0,0.78);border:2px solid var(--red);
+  padding:3px 7px;box-shadow:0 0 6px rgba(255,0,68,0.2);
+}
+.hp-lbl{font-family:var(--pix);font-size:5px;color:var(--red);margin-bottom:1px;}
+.hp-hearts{font-size:clamp(9px,2vw,12px);letter-spacing:1px;line-height:1.1;}
+/* Lives */
+.lives-hud{
+  background:rgba(0,0,0,0.78);border:2px solid rgba(255,200,0,0.6);
+  padding:3px 7px;
+}
+.lives-lbl{font-family:var(--pix);font-size:5px;color:#ffcc00;margin-bottom:1px;}
+
+/* Next life bar */
+.next-life-hud{
+  background:rgba(0,0,0,0.65);border:1px solid rgba(255,200,0,0.3);
+  padding:3px 7px;
+}
+.next-life-lbl{
+  font-family:var(--lex);font-size:clamp(7px,1.6vw,9px);font-weight:600;
+  color:rgba(255,180,0,0.7);margin-bottom:2px;white-space:nowrap;
+}
+
+.next-life-fill{height:100%;background:linear-gradient(90deg,#ffcc00,#ff8800);transition:width 0.3s;width:0%;}
+.next-life-val{
+  font-family:var(--lex);font-size:clamp(7px,1.6vw,9px);font-weight:500;
+  color:rgba(255,180,0,0.55);margin-top:2px;white-space:nowrap;
+}
+/* Landscape: panel goes horizontal row, smaller elements */
+@media (orientation:landscape) and (max-height:500px){
+  .left-panel{
+    flex-direction:row;align-items:flex-start;flex-wrap:wrap;
+    max-width:min(320px,42vw);gap:3px;
+  }
+  .hp-hearts,.lives-icons{font-size:9px;}
+  .next-life-bar{width:70px;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+<!-- MENU -->
+<div id="menuScreen" class="screen active">
+  <button class="fs-btn" id="menuFsBtn" style="position:absolute;top:14px;right:14px;" onclick="toggleFS()">⛶ FULL</button>
+  <div class="menu-snake">🐍</div>
+  <div class="menu-title">SNAKE ARENA</div>
+  <div class="menu-sub">◆ ULTRA ◆</div>
+  <div class="menu-best">HI-SCORE: <span id="menuBest">0</span></div>
+  <div class="diff-row">
+    <button class="diff-btn active" data-diff="easy">EASY</button>
+    <button class="diff-btn" data-diff="medium">MEDIUM</button>
+    <button class="diff-btn" data-diff="hard">HARD</button>
+    <button class="diff-btn" data-diff="insane">INSANE</button>
+  </div>
+  <button class="mbtn pri" id="playBtn">▶ SELECT FIGHTER</button>
+  <button class="mbtn sec" id="howBtn">? HOW TO PLAY</button>
+  <div class="insert">— BEGIN HUNT —</div>
+</div>
+
+<!-- SELECT -->
+<div id="selectScreen" class="screen">
+  <div class="sel-hdr">
+  <div class="sel-title">— SELECT YOUR FIGHTER —</div>
+  <div class="sel-name-row">
+    <span class="sel-name-lbl">YOUR NAME:</span>
+    <input class="sel-name-input" id="playerNameInput" maxlength="12" placeholder="ENTER NAME" autocomplete="off" spellcheck="false"/>
+  </div>
+</div>
+  <div class="sel-body">
+    <div class="snake-grid" id="snakeGrid"></div>
+    <div class="snake-det" id="snakeDet"></div>
+  </div>
+  <div class="sel-ftr">
+    <button class="back-btn" id="backBtn">◀ BACK</button>
+    <button class="fight-btn" id="fightBtn">⚡ FIGHT ⚡</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="gameScreen" class="screen">
+  <canvas id="gameCanvas"></canvas>
+  <div class="gui">
+    <!-- TL: left panel column -->
+    <div class="left-panel" id="leftPanel">
+      <button class="pause-btn" id="pauseBtn">⏸ PAUSE</button>
+      <div class="kill-hud">💀 <span class="kill-num" id="killDsp">0</span></div>
+      <div class="hp-hud"><div class="hp-lbl">HP</div><div class="hp-hearts" id="hpHearts"></div></div>
+      <div class="lives-hud"><div class="lives-lbl">LIVES</div><div class="lives-icons" id="livesIcons"></div></div>
+      <div class="next-life-hud" id="nextLifeHud">
+        <div class="next-life-lbl">NEXT LIFE AT</div>
+        <div class="next-life-bar"><div class="next-life-fill" id="nextLifeFill"></div></div>
+        <div class="next-life-val" id="nextLifeVal">0 / 10,000</div>
+      </div>
+    </div>
+    <!-- TC: score center top -->
+    <div class="score-hud"><div class="score-num" id="scoreDsp">0</div><div class="score-best">BEST: <span id="gameBest">0</span></div></div>
+    <!-- TR: leaderboard + zoom + fullscreen -->
+    <div class="top-right">
+      <div class="lb-hud"><div class="lb-title">▶ LEADERBOARD</div><div id="lbList"></div></div>
+      <div style="display:flex;gap:4px;justify-content:flex-end;">
+        <div class="zoom-lock-btn" id="zoomLockBtn">
+          <div class="zoom-lock-icon" id="zoomLockIcon">🔓</div>
+          <div class="zoom-lock-val" id="zoomLockVal">1.00×</div>
+        </div>
+        <button class="fs-btn" id="fsBtn">⛶ FULL</button>
+      </div>
+      <div class="diff-hud" id="diffHud">EASY</div>
+    </div>
+    <!-- MC: length display -->
+    <div class="len-hud">LEN: <span id="lenDsp">3</span></div>
+    <!-- overlays stay absolute -->
+    <div class="respawn-overlay" id="respawnOverlay"><div class="resp-txt">☠ RESPAWNING ☠</div><div class="resp-sub" id="respSub">Lives remaining: 2</div></div>
+    <div class="pause-overlay" id="pauseOverlay">
+      <div class="pause-title">⏸ PAUSED</div>
+      <div class="pause-sub">TAP RESUME TO CONTINUE</div>
+      <button class="resume-btn" id="resumeBtn">▶ RESUME</button>
+      <button class="quit-btn" id="quitBtn">◀ QUIT TO MENU</button>
+    </div>
+    <div class="killfeed" id="killfeed"></div>
+    <div class="life-earned" id="lifeEarned">
+      <div>❤️ EXTRA LIFE!</div>
+      <div class="life-earned-sub" id="lifeEarnedSub">+1 LIFE</div>
+    </div>
+    
+      <div class="next-life-val" id="nextLifeVal">0 / 10,000</div>
+    </div>
+    <div class="pwr-ready" id="pwrReady">POWER READY!</div>
+    <div class="boost-btn" id="boostBtn"><div style="font-size:20px">⚡</div><div class="boost-lbl">BOOST</div></div>
+    <div class="pwr-wrap">
+      <canvas id="powerCanvas" width="90" height="90"></canvas>
+      <div class="pwr-sp" id="pwrSpecies"></div>
+    </div>
+    <div class="jzone" id="jzone"><div class="jbase"></div><div class="jhandle" id="jhandle"></div></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="gameOverModal">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitle">GAME OVER</div>
+    <div class="final-score" id="finalScore">0</div>
+    <div class="final-lbl">FINAL SCORE</div>
+    <div class="stats-grid">
+      <div class="sgcell"><span class="sgval" id="finalKills">0</span><span class="sglbl">KILLS</span></div>
+      <div class="sgcell"><span class="sgval" id="finalLen">0</span><span class="sglbl">LENGTH</span></div>
+      <div class="sgcell"><span class="sgval" id="finalRank">#1</span><span class="sglbl">RANK</span></div>
+    </div>
+    <button class="mbtn2 pri" id="againBtn">▶ PLAY AGAIN</button>
+    <button class="mbtn2 sec2" id="menuBtn2">◀ MENU</button>
+  </div>
+</div>
+
+<!-- HOW TO PLAY SCREEN -->
+<div id="howScreen" class="screen">
+  <div class="how-hdr"><div class="how-title">⚡ HOW TO PLAY ⚡</div></div>
+  <div class="how-body">
+    <div class="how-box">
+
+      <div class="how-sec">
+        <div class="how-lbl">◆ CONTROLS</div>
+        <div class="how-row"><div class="how-ic">🕹️</div><div><b>Move</b> — Joystick (touch) or Mouse</div></div>
+        <div class="how-row"><div class="how-ic">⚡</div><div><b>Boost</b> <span class="how-tag">SPACE</span> <span class="how-tag">HOLD</span> — speed burst, drains your length</div></div>
+        <div class="how-row"><div class="how-ic">🔥</div><div><b>Power</b> <span class="how-tag">Q</span> — unique species ability, 9s cooldown</div></div>
+        <div class="how-row"><div class="how-ic">⛶</div><div><b>Full Screen</b> — tap ⛶ on any screen</div></div>
+        <div class="how-row"><div class="how-ic">⏸</div><div><b>Pause</b> — top-left button or <span class="how-tag">P</span> / <span class="how-tag">ESC</span></div></div>
+      </div>
+
+      <hr class="how-hr">
+      <div class="how-sec">
+        <div class="how-lbl">◆ DAMAGE RULES — HEAD ONLY</div>
+        <div class="how-row"><div class="how-ic">💥</div><div>Your <b>head</b> hits enemy body → <b>YOU</b> take their ATK damage</div></div>
+        <div class="how-row"><div class="how-ic">💢</div><div>Two heads collide → <b>BOTH</b> snakes take damage</div></div>
+        <div class="how-row"><div class="how-ic">🧱</div><div>Hit the wall → lose a life. No body-on-body damage ever.</div></div>
+        <div class="how-row"><div class="how-ic">🎯</div><div>Abilities &amp; projectiles always hit the head directly</div></div>
+      </div>
+
+      <hr class="how-hr">
+      <div class="how-sec">
+        <div class="how-lbl">◆ LIVES &amp; SCORING</div>
+        <div class="how-row"><div class="how-ic">🌟</div><div>Start with <b>3 lives</b>, earn up to 5 max</div></div>
+        <div class="how-row"><div class="how-ic">❤️</div><div>Free life at <b>10k pts</b> — threshold doubles: 20k → 40k → 80k → 160k</div></div>
+        <div class="how-row"><div class="how-ic">💀</div><div>On death: respawn at half length, half your score drops as collectible orbs</div></div>
+        <div class="how-row"><div class="how-ic">🏆</div><div>Kill a snake → steal 200 pts + bonus orbs from their body</div></div>
+        <div class="how-row"><div class="how-ic">📈</div><div>View auto-zooms out as your snake grows — the bigger you get, the more you see</div></div>
+      </div>
+
+      <hr class="how-hr">
+      <div class="how-sec">
+        <div class="how-lbl">◆ DIFFICULTY</div>
+        <div class="how-row"><div class="how-ic">🟢</div><div><b>Easy</b> — slow bots, low aggression, 8 opponents</div></div>
+        <div class="how-row"><div class="how-ic">🟡</div><div><b>Medium</b> — standard challenge, 12 opponents</div></div>
+        <div class="how-row"><div class="how-ic">🟠</div><div><b>Hard</b> — fast AI reactions, high aggression, 14 opponents</div></div>
+        <div class="how-row"><div class="how-ic">🔴</div><div><b>Insane</b> — near-instant AI, maximum speed &amp; coordination, 14 opponents</div></div>
+      </div>
+
+      <hr class="how-hr">
+      <div class="how-sec">
+        <div class="how-lbl">◆ SNAKE CLASSES</div>
+        <div class="how-cls-row"><div class="how-dot" style="background:#ff4444"></div><div><b>Glass Cannon</b> — 1 HP, lightning fast, devastating powers. High risk, high reward.</div></div>
+        <div class="how-cls-row"><div class="how-dot" style="background:#ffaa00"></div><div><b>Balanced</b> — medium stats across the board. Forgiving and versatile.</div></div>
+        <div class="how-cls-row"><div class="how-dot" style="background:#00aaff"></div><div><b>Tank</b> — slow but nearly unkillable. High HP, powerful defensive abilities.</div></div>
+      </div>
+
+      <hr class="how-hr">
+      <div class="how-sec">
+        <div class="how-lbl">◆ FIGHTER TIPS</div>
+        <div class="how-row"><div class="how-ic">🎨</div><div>Drag the <b>color wheel</b> on fighter select to customize your snake's skin pattern</div></div>
+        <div class="how-row"><div class="how-ic">🔒</div><div>Use the 🔒 button in-game to <b>lock your zoom depth</b> — saved across sessions</div></div>
+        <div class="how-row"><div class="how-ic">⚡</div><div>Each snake has a <b>passive ability</b> active at all times + a <b>power</b> on 9s cooldown</div></div>
+        <div class="how-row"><div class="how-ic">🐍</div><div>Bots use species-specific AI — <b>Anaconda orbits you</b>, <b>King Cobra</b> zones, <b>Mamba</b> rushes</div></div>
+      </div>
+
+    </div>
+  </div>
+  <div class="how-ftr">
+    <button class="how-back" id="howBackBtn">◀ BACK</button>
+    <button class="how-play" id="howPlayBtn">⚡ SELECT FIGHTER</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ─── SPECIES ───────────────────────────────────────────────────────────────
+const SPECIES=[
+  {id:'black_mamba',  name:'BLACK MAMBA',  emoji:'🖤',cls:'GLASS CANNON',clsC:'#ff4444',hp:1,atk:1,spd:1.8,bst:4.5,defCol:'hsl(260,48%,20%)',
+   passive:'LIGHTNING: Fastest snake. Enemy slowed -10% near your head.',
+   pwrName:'NEUROSTRIKE',pwrDesc:'Next hit = instant kill (3s window)',pwrC:'#ff4444',pwrDur:3000,bot:'aggressive'},
+  {id:'sidewinder',   name:'SIDEWINDER',   emoji:'〰️',cls:'GLASS CANNON',clsC:'#ff4444',hp:1,atk:1,spd:1.6,bst:4.0,defCol:'hsl(36,56%,51%)',
+   passive:'LATERAL DRIFT: 2x tighter steering. Hardest snake to corner or catch.',
+   pwrName:'DESERT PHASE',pwrDesc:'Invincible for 2.5s — pass through all bodies',pwrC:'#ffaa00',pwrDur:2500,bot:'evasive'},
+  {id:'green_mamba',  name:'GREEN MAMBA',  emoji:'💚',cls:'GLASS CANNON',clsC:'#ff4444',hp:1,atk:1,spd:1.5,bst:4.5,defCol:'hsl(120,67%,40%)',
+   passive:'GHOST: Hitbox shrinks 35% while boosting — harder to hit mid-dash.',
+   pwrName:'CANOPY RUSH',pwrDesc:'Teleport 220px forward instantly',pwrC:'#00ff88',pwrDur:0,bot:'evasive'},
+  {id:'coral_snake',  name:'CORAL SNAKE',  emoji:'🔴',cls:'GLASS CANNON',clsC:'#ff4444',hp:2,atk:1,spd:1.3,bst:3.5,defCol:'hsl(0,71%,47%)',
+   passive:'MIMICRY: Your name randomizes on every respawn — enemies lose track.',
+   pwrName:'FALSE SIGNAL',pwrDesc:'Nearby enemies get confused — jittery movement + -15% speed for 5s',pwrC:'#ff0055',pwrDur:5000,bot:'balanced'},
+  {id:'king_cobra',   name:'KING COBRA',   emoji:'👑',cls:'BALANCED',clsC:'#ffaa00',hp:2,atk:1,spd:1.0,bst:3.0,defCol:'hsl(46,72%,45%)',
+   passive:'VENOM AURA: Enemies within 80px get -20% speed.',
+   pwrName:'HOOD FLARE',pwrDesc:'120px fear zone: enemies inside -40% speed for 3s',pwrC:'#ffcc00',pwrDur:3000,bot:'territorial'},
+  {id:'rattlesnake',  name:'RATTLESNAKE',  emoji:'🎲',cls:'BALANCED',clsC:'#ffaa00',hp:2,atk:1,spd:1.1,bst:3.5,defCol:'hsl(35,63%,42%)',
+   passive:'HEAT PIT: Enemy heads glow red through food clusters.',
+   pwrName:'RATTLE SHOCKWAVE',pwrDesc:'Stun+slow ALL snakes within 250px for 2s',pwrC:'#ff8800',pwrDur:2000,bot:'balanced'},
+  {id:'spitting_cobra',name:'SPIT COBRA', emoji:'💦',cls:'BALANCED',clsC:'#ffaa00',hp:2,atk:1,spd:1.2,bst:3.5,defCol:'hsl(23,72%,45%)',
+   passive:'VENOM TRAIL: Boost leaves slow zones (-30% SPD) for 3s.',
+   pwrName:'VENOM SPIT',pwrDesc:'Fire projectile — hit snake loses 50% speed for 3s',pwrC:'#88ff00',pwrDur:0,bot:'ranged'},
+  {id:'king_snake',   name:'KING SNAKE',   emoji:'⚔️',cls:'BALANCED',clsC:'#ffaa00',hp:2,atk:1,spd:1.0,bst:3.0,defCol:'hsl(0,0%,20%)',
+   passive:'NULL IMMUNITY: Completely immune to all slows and debuffs.',
+   pwrName:'NULL FIELD',pwrDesc:'Disables ALL enemy powers+passives within 200px for 4s',pwrC:'#ffffff',pwrDur:4000,bot:'aggressive'},
+  {id:'copperhead',   name:'COPPERHEAD',   emoji:'🍂',cls:'BALANCED',clsC:'#ffaa00',hp:2,atk:1,spd:1.0,bst:3.0,defCol:'hsl(22,67%,38%)',
+   passive:'HEAT SENSE: Enemy heads always visible with a glow aura.',
+   pwrName:'STRIKE COIL',pwrDesc:'Next collision deals 2x ATK damage (3s window)',pwrC:'#cc6600',pwrDur:3000,bot:'ambush'},
+  {id:'boa',          name:'BOA CONSTRICTOR',emoji:'❤️',cls:'TANK',clsC:'#00aaff',hp:3,atk:1,spd:0.9,bst:2.5,defCol:'hsl(340,60%,33%)',
+   passive:'FEEDING FRENZY: On kill, gain 5s of speed+size surge.',
+   pwrName:'SQUEEZE',pwrDesc:'Nearest enemy within 120px frozen for 1.5s — then strike!',pwrC:'#ff4488',pwrDur:1500,bot:'territorial'},
+  {id:'cottonmouth',  name:'COTTONMOUTH',  emoji:'💧',cls:'TANK',clsC:'#00aaff',hp:3,atk:1,spd:0.9,bst:2.5,defCol:'hsl(75,50%,27%)',
+   passive:'TERRITORIAL: Kills near spawn drop bonus food clusters.',
+   pwrName:'MOCCASIN SURGE',pwrDesc:'4x speed for 1.5s — fastest burst in game',pwrC:'#88ff44',pwrDur:1500,bot:'territorial'},
+  {id:'gaboon_viper', name:'GABOON VIPER', emoji:'💜',cls:'TANK',clsC:'#00aaff',hp:2,atk:2,spd:0.8,bst:2.0,defCol:'hsl(276,45%,37%)',
+   passive:'LONG FANGS: Kill range 25% wider than visible hitbox.',
+   pwrName:'FANG LOCK',pwrDesc:'Nearest enemy frozen 1.2s. Your collision range +75% for 4s.',pwrC:'#aa44ff',pwrDur:4000,bot:'ambush'},
+  {id:'retic_python', name:'RETIC PYTHON', emoji:'🔶',cls:'TANK',clsC:'#00aaff',hp:4,atk:1,spd:0.8,bst:2.0,defCol:'hsl(40,60%,33%)',
+   passive:'ENDLESS HUNGER: Food gives 50% more length.',
+   pwrName:'MASS ABSORB',pwrDesc:'3x vacuum radius for 4s — rapid growth window',pwrC:'#ffaa44',pwrDur:4000,bot:'collector'},
+  {id:'anaconda',     name:'ANACONDA',     emoji:'🌊',cls:'TANK',clsC:'#00aaff',hp:4,atk:1,spd:0.7,bst:2.2,defCol:'hsl(150,50%,27%)',
+   passive:'CONSTRICTOR: Orbit an enemy for 2s to lock their speed at -80%.',
+   pwrName:'CONSTRICT',pwrDesc:'Nearest enemy within 180px gets -80% speed for 3s',pwrC:'#00cc44',pwrDur:3000,bot:'constrictor'},
+  {id:'burmese_python',name:'BURMESE PYTHON',emoji:'🏔️',cls:'TANK',clsC:'#00aaff',hp:5,atk:1,spd:0.7,bst:2.0,defCol:'hsl(45,33%,40%)',
+   passive:'AMBUSH: Stay still 3s → collision range +40% until you boost.',
+   pwrName:'ANCIENT PATIENCE',pwrDesc:'5s tank mode — incoming ATK halved, ghost collision',pwrC:'#aacc00',pwrDur:5000,bot:'ambush'}
+];
+
+
+
+// ─── RENDER PADDING (module-level so all draw methods can access) ─────────────
+let PAD=150; // updated each frame by Game.draw() based on screen+zoom
+
+// ─── SNAKE SVG ICONS ──────────────────────────────────────────────────────────
+const SNAKE_ICONS={
+/* ── Each icon: 56x56 viewBox, realistic scale texture, species-accurate color ── */
+
+'black_mamba':`<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bm_body" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#3a2460"/>
+      <stop offset="100%" stop-color="#0d0818"/>
+    </radialGradient>
+  </defs>
+  <!-- body coil -->
+  <path d="M7,50 C11,36 19,30 27,32 C35,34 41,22 45,10" stroke="url(#bm_body)" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <!-- scale pattern overlay -->
+  <path d="M7,50 C11,36 19,30 27,32 C35,34 41,22 45,10" stroke="rgba(120,80,220,0.25)" stroke-width="6" stroke-linecap="round" fill="none" stroke-dasharray="3 3"/>
+  <path d="M7,50 C11,36 19,30 27,32 C35,34 41,22 45,10" stroke="rgba(200,160,255,0.12)" stroke-width="3" stroke-linecap="round" fill="none" stroke-dasharray="2 5"/>
+  <!-- sheen highlight -->
+  <path d="M9,48 C13,34 21,28 29,30" stroke="rgba(200,170,255,0.3)" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <!-- head -->
+  <ellipse cx="46" cy="10" rx="7.5" ry="5" fill="#1a0e30" transform="rotate(-38,46,10)"/>
+  <ellipse cx="46" cy="10" rx="5" ry="3.5" fill="#2a1850" transform="rotate(-38,46,10)"/>
+  <!-- eyes -->
+  <circle cx="47.5" cy="7.5" r="2" fill="#0a0010"/><circle cx="47.5" cy="7.5" r="1.2" fill="#200040"/><circle cx="48" cy="7.2" r="0.5" fill="rgba(255,200,255,0.8)"/>
+  <circle cx="44" cy="8.5" r="2" fill="#0a0010"/><circle cx="44" cy="8.5" r="1.2" fill="#200040"/><circle cx="44.5" cy="8.2" r="0.5" fill="rgba(255,200,255,0.8)"/>
+  <!-- forked tongue -->
+  <line x1="47" y1="12" x2="45.5" y2="16.5" stroke="#cc22ff" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="47" y1="12" x2="48.5" y2="16" stroke="#cc22ff" stroke-width="1.4" stroke-linecap="round"/>
+</svg>`,
+
+'sidewinder':`<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sw_body" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d4a054"/>
+      <stop offset="100%" stop-color="#8a5c22"/>
+    </linearGradient>
+  </defs>
+  <!-- S-curve sidewinder body -->
+  <path d="M6,46 C14,38 10,22 20,18 C30,14 28,30 38,28 C46,26 49,13 52,8" stroke="url(#sw_body)" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <!-- crossband markings - sidewinder's signature saddles -->
+  <path d="M6,46 C14,38 10,22 20,18" stroke="rgba(100,60,10,0.55)" stroke-width="5" stroke-linecap="round" fill="none" stroke-dasharray="4 5"/>
+  <path d="M20,18 C30,14 28,30 38,28" stroke="rgba(100,60,10,0.55)" stroke-width="5" stroke-linecap="round" fill="none" stroke-dasharray="4 5"/>
+  <path d="M38,28 C46,26 49,13 52,8" stroke="rgba(100,60,10,0.55)" stroke-width="5" stroke-linecap="round" fill="none" stroke-dasharray="4 5"/>
+  <!-- dorsal shine -->
+  <path d="M7,44 C14,36 11,21 20,17" stroke="rgba(255,220,150,0.35)" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <!-- head - triangular sidewinder -->
+  <ellipse cx="52" cy="8.5" rx="7" ry="4.5" fill="#a06828" transform="rotate(-48,52,8.5)"/>
+  <ellipse cx="52" cy="8.5" rx="4.5" ry="3" fill="#c08840" transform="rotate(-48,52,8.5)"/>
+  <circle cx="53.5" cy="6" r="1.8" fill="#1a0e00"/><circle cx="53.5" cy="6" r="1" fill="#3a2000"/><circle cx="54" cy="5.7" r="0.4" fill="rgba(255,220,100,0.9)"/>
+  <circle cx="50.5" cy="7" r="1.8" fill="#1a0e00"/><circle cx="50.5" cy="7" r="1" fill="#3a2000"/><circle cx="51" cy="6.7" r="0.4" fill="rgba(255,220,100,0.9)"/>
+  <line x1="51" y1="11" x2="49.5" y2="15" stroke="#cc8820" stroke-width="1.3" stroke-linecap="round"/>
+  <line x1="51" y1="11" x2="52.5" y2="15" stroke="#cc8820" stroke-width="1.3" stroke-linecap="round"/>
+</svg>`,
+
+'green_mamba':`<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gm_body" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1a7a28"/>
+      <stop offset="50%" stop-color="#2ec444"/>
+      <stop offset="100%" stop-color="#88ee44"/>
+    </linearGradient>
+  </defs>
+  <path d="M10,52 C8,40 16,28 18,18 C20,9 30,5 38,9 C46,13 50,7 52,3" stroke="url(#gm_body)" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <!-- green mamba has subtle yellow-tipped scales -->
+  <path d="M10,52 C8,40 16,28 18,18" stroke="rgba(180,255,80,0.2)" stroke-width="4" stroke-linecap="round" fill="none" stroke-dasharray="3 4"/>
+  <path d="M18,18 C20,9 30,5 38,9" stroke="rgba(180,255,80,0.2)" stroke-width="4" stroke-linecap="round" fill="none" stroke-dasharray="3 4"/>
+  <!-- bright dorsal ridge -->
+  <path d="M11,50 C9,38 17,26 19,17" stroke="rgba(200,255,120,0.45)" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <!-- head -->
+  <ellipse cx="52" cy="3.5" rx="7" ry="4.2" fill="#18601e" transform="rotate(-22,52,3.5)"/>
+  <ellipse cx="52" cy="3.5" rx="4.5" ry="2.8" fill="#28a030" transform="rotate(-22,52,3.5)"/>
+  <circle cx="54" cy="1.8" r="1.8" fill="#0a1a06"/><circle cx="54" cy="1.8" r="1" fill="#1a3010"/><circle cx="54.4" cy="1.5" r="0.45" fill="rgba(200,255,100,0.9)"/>
+  <circle cx="50.5" cy="2.8" r="1.8" fill="#0a1a06"/><circle cx="50.5" cy="2.8" r="1" fill="#1a3010"/><circle cx="50.9" cy="2.5" r="0.45" fill="rgba(200,255,100,0.9)"/>
+  <line x1="52.5" y1="6.5" x2="51" y2="10.5" stroke="#44cc22" stroke-width="1.3" stroke-linecap="round"/>
+  <line x1="52.5" y1="6.5" x2="54" y2="10" stroke="#44cc22" stroke-width="1.3" stroke-linecap="round"/>
+</svg>`,
+
+'coral_snake':`<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+  <!-- coral snake's iconic red-yellow-black banding -->
+  <!-- body path clipped with bands -->
+  <path d="M10,52 C20,44 24,32 28,22 C32,12 42,8 48,14" stroke="#cc1a1a" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <!-- yellow bands -->
+  <path d="M10,52 C20,44 24,32 28,22 C32,12 42,8 48,14" stroke="#ffee00" stroke-width="4" stroke-linecap="round" fill="none" stroke-dasharray="3 6"/>
+  <!-- black bands -->
+  <path d="M10,52 C20,44 24,32 28,22 C32,12 42,8 48,14" stroke="#111" stroke-width="2.5" stroke-linecap="round" fill="none" stroke-dasharray="1.5 7.5" stroke-dashoffset="3"/>
+  <!-- sheen -->
+  <path d="M11,50 C21,42 25,30 29,20" stroke="rgba(255,255,180,0.25)" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <!-- small rounded head - coral snakes are blunt-nosed -->
+  <ellipse cx="48.5" cy="14" rx="7" ry="5" fill="#cc1a1a" transform="rotate(38,48.5,14)"/>
+  <ellipse cx="48.5" cy="14" rx="4.5" ry="3.2" fill="#ff2222" transform="rotate(38,48.5,14)"/>
+  <circle cx="50.5" cy="11.5" r="1.8" fill="#0d0000"/><circle cx="50.5" cy="11.5" r="1" fill="#1a0000"/><circle cx="51" cy="11.2" r="0.45" fill="rgba(255,180,100,0.9)"/>
+  <circle cx="47" cy="12.5" r="1.8" fill="#0d0000"/><circle cx="47" cy="12.5" r="1" fill="#1a0000"/><circle cx="47.5" cy="12.2" r="0.45" fill="rgba(255,180,100,0.9)"/>
+  <line x1="49" y1="17.5" x2="47.5" y2="21.5" stroke="#ff4444" stroke-width="1.3" stroke-linecap="round"/>
+  <line x1="49" y1="17.5" x2="50.5" y2="21" stroke="#ff4444" stroke-width="1.3" stroke-linecap="round"/>
+</svg>`,
+
+'king_cobra':`<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="kc_hood" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#e8b830"/>
+      <stop offset="100%" stop-color="#7a5a08"/>
+    </radialGradient>
+  </defs>
+  <!-- body below hood -->
+  <path d="M28,56 C26,46 24,38 26,30" stroke="#c8a020" stroke-width="8" stroke-linecap="round" fill="none"/>
+  <path d="M28,56 C26,46 24,38 26,30" stroke="rgba(80,50,0,0.4)" stroke-width="4" stroke-linecap="round" fill="none" stroke-dasharray="3 4"/>
+  <!-- spread hood - the signature -->
+  <path d="M8,22 C6,12 12,4 20,4 C24,4 26,8 28,12 C30,8 32,4 36,4 C44,4 50,12 48,22 C46,30 38,32 28,34 C18,32 10,30 8,22Z" fill="url(#kc_hood)"/>
+  <!-- hood rib markings -->
+  <path d="M14,20 C14,12 18,8 24,8" stroke="rgba(50,30,0,0.4)" stroke-width="2" fill="none"/>
+  <path d="M20,26 C18,18 20,12 24,10" stroke="rgba(50,30,0,0.35)" stroke-width="1.5" fill="none"/>
+  <path d="M42,20 C42,12 38,8 32,8" stroke="rgba(50,30,0,0.4)" stroke-width="2" fill="none"/>
+  <path d="M36,26 C38,18 36,12 32,10" stroke="rgba(50,30,0,0.35)" stroke-width="1.5" fill="none"/>
+  <!-- hood sheen -->
+  <path d="M16,18 C16,12 20,8 26,7" stroke="rgba(255,230,120,0.4)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <!-- face -->
+  <ellipse cx="28" cy="20" rx="10" ry="8" fill="#b89018"/>
+  <ellipse cx="28" cy="20" rx="7" ry="5.5" fill="#d4a828"/>
+  <!-- eyes -->
+  <circle cx="23" cy="18" r="2.4" fill="#0a0800"/><circle cx="23" cy="18" r="1.4" fill="#1a1400"/><circle cx="23.5" cy="17.6" r="0.6" fill="rgba(255,220,80,0.9)"/>
+  <circle cx="33" cy="18" r="2.4" fill="#0a0800"/><circle cx="33" cy="18" r="1.4" fill="#1a1400"/><circle cx="33.5" cy="17.6" r="0.6" fill="rgba(255,220,80,0.9)"/>
+  <!-- tongue -->
+  <line x1="28" y1="26" x2="26" y2="31" stroke="#cc8800" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="28" y1="26" x2="30" y2="31" stroke="#cc8800" stroke-width="1.5" stroke-linecap="round"/>
+</svg>`,
+
+'rattlesnake':`<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="rts_body" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c09040"/>
+      <stop offset="100%" stop-color="#7a5018"/>
+    </linearGradient>
+  </defs>
+  <!-- rattle at tail -->
+  <ellipse cx="6" cy="50" rx="4" ry="3" fill="#8a6020" opacity="0.9"/>
+  <ellipse cx="10" cy="50.5" rx="3.5" ry="2.5" fill="#a07030" opacity="0.85"/>
+  <ellipse cx="14" cy="50" rx="3" ry="2.2" fill="#b88038"/>
+  <!-- body with diamond pattern -->
+  <path d="M16,49 C22,42 20,28 28,20 C36,12 46,14 50,20" stroke="url(#rts_body)" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <!-- diamond marks -->
+  <path d="M16,49 C22,42 20,28 28,20 C36,12 46,14 50,20" stroke="rgba(60,30,0,0.5)" stroke-width="5.5" stroke-linecap="round" fill="none" stroke-dasharray="5 5"/>
+  <path d="M16,49 C22,42 20,28 28,20 C36,12 46,14 50,20" stroke="rgba(220,180,80,0.25)" stroke-width="2.5" stroke-linecap="round" fill="none" stroke-dasharray="2.5 7.5" stroke-dashoffset="2.5"/>
+  <!-- dorsal shine -->
+  <path d="M17,47 C23,40 21,26 29,18" stroke="rgba(255,220,130,0.4)" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <!-- triangular head -->
+  <ellipse cx="50.5" cy="20" rx="8" ry="5.5" fill="#a07828" transform="rotate(25,50.5,20)"/>
+  <ellipse cx="50.5" cy="20" rx="5.5" ry="3.8" fill="#c09040" transform="rotate(25,50.5,20)"/>
+  <!-- vertical slit pupils -->
+  <circle cx="52" cy="17.5" r="2" fill="#0d0800"/><ellipse cx="52" cy="17.5" rx="0.6" ry="1.4" fill="#1a0a00"/><circle cx="52.2" cy="17" r="0.4" fill="rgba(255,200,60,0.8)"/>
+  <circle cx="48.5" cy="19" r="2" fill="#0d0800"/><ellipse cx="48.5" cy="19" rx="0.6" ry="1.4" fill="#1a0a00"/><circle cx="48.7" cy="18.5" r="0.4" fill="rgba(255,200,60,0.8)"/>
+  <line x1="51" y1="24" x2="49.5" y2="28" stroke="#aa7010" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="51" y1="24" x2="52.5" y2="28" stroke="#aa7010" stroke-width="1.4" stroke-linecap="round"/>
+</svg>`,
+
+'spitting_cobra':`<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="sc_hood" cx="50%" cy="45%" r="60%">
+      <stop offset="0%" stop-color="#e08040"/>
+      <stop offset="100%" stop-color="#882808"/>
+    </radialGradient>
+  </defs>
+  <!-- body -->
+  <path d="M28,56 C28,46 26,38 28,30" stroke="#c06020" stroke-width="8" stroke-linecap="round" fill="none"/>
+  <path d="M28,56 C28,46 26,38 28,30" stroke="rgba(60,20,0,0.4)" stroke-width="4" stroke-linecap="round" fill="none" stroke-dasharray="3 4"/>
+  <!-- spread hood - slightly smaller than king cobra -->
+  <path d="M12,24 C10,14 16,6 22,6 C25,6 27,10 28,13 C29,10 31,6 34,6 C40,6 46,14 44,24 C42,32 36,34 28,36 C20,34 14,32 12,24Z" fill="url(#sc_hood)"/>
+  <!-- neck band - spitting cobra's distinctive collar -->
+  <path d="M16,30 C18,35 22,37 28,38 C34,37 38,35 40,30" stroke="#441008" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- hood ribs -->
+  <path d="M16,22 C16,14 20,9 25,8" stroke="rgba(30,10,0,0.4)" stroke-width="1.8" fill="none"/>
+  <path d="M40,22 C40,14 36,9 31,8" stroke="rgba(30,10,0,0.4)" stroke-width="1.8" fill="none"/>
+  <!-- venom spitting trajectory dots -->
+  <circle cx="22" cy="2" r="2" fill="#88ff00" opacity="0.8"/>
+  <circle cx="18" cy="5" r="1.5" fill="#88ff00" opacity="0.6"/>
+  <circle cx="34" cy="2" r="2" fill="#88ff00" opacity="0.8"/>
+  <circle cx="38" cy="5" r="1.5" fill="#88ff00" opacity="0.6"/>
+  <!-- face -->
+  <ellipse cx="28" cy="22" rx="9" ry="7" fill="#b05018"/>
+  <ellipse cx="28" cy="22" rx="6.5" ry="5" fill="#d06830"/>
+  <circle cx="23.5" cy="20" r="2.2" fill="#0d0400"/><circle cx="23.5" cy="20" r="1.2" fill="#1a0800"/><circle cx="24" cy="19.6" r="0.5" fill="rgba(255,160,60,0.9)"/>
+  <circle cx="32.5" cy="20" r="2.2" fill="#0d0400"/><circle cx="32.5" cy="20" r="1.2" fill="#1a0800"/><circle cx="33" cy="19.6" r="0.5" fill="rgba(255,160,60,0.9)"/>
+  <line x1="28" y1="27.5" x2="26.5" y2="32" stroke="#aa5010" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="28" y1="27.5" x2="29.5" y2="32" stroke="#aa5010" stroke-width="1.4" stroke-linecap="round"/>
+</svg>`,
+
+'king_snake':`<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+  <!-- king snake: bold black and white (or red/black/yellow) banding -->
+  <path d="M8,52 C14,40 12,26 20,16 C28,6 40,8 48,18" stroke="#111111" stroke-width="10" stroke-linecap="round" fill="none"/>
+  <!-- bright white crossbands -->
+  <path d="M8,52 C14,40 12,26 20,16 C28,6 40,8 48,18" stroke="#f0f0f0" stroke-width="4.5" stroke-linecap="round" fill="none" stroke-dasharray="5 6"/>
+  <!-- thinner black dividers -->
+  <path d="M8,52 C14,40 12,26 20,16 C28,6 40,8 48,18" stroke="#080808" stroke-width="2" stroke-linecap="round" fill="none" stroke-dasharray="1 10" stroke-dashoffset="2.5"/>
+  <!-- white band sheen -->
+  <path d="M9,50 C15,38 13,24 21,15" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <!-- head -->
+  <ellipse cx="48.5" cy="18" rx="8" ry="5.5" fill="#111" transform="rotate(30,48.5,18)"/>
+  <ellipse cx="48.5" cy="18" rx="5.5" ry="3.8" fill="#1e1e1e" transform="rotate(30,48.5,18)"/>
+  <!-- striking white eyeband on king snake -->
+  <path d="M44,14 C46,12 50,13 52,16" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.7"/>
+  <circle cx="51" cy="15" r="2" fill="#080808"/><circle cx="51" cy="15" r="1.1" fill="#0f0f0f"/><circle cx="51.4" cy="14.7" r="0.5" fill="rgba(255,255,255,0.9)"/>
+  <circle cx="47" cy="15.5" r="2" fill="#080808"/><circle cx="47" cy="15.5" r="1.1" fill="#0f0f0f"/><circle cx="47.4" cy="15.2" r="0.5" fill="rgba(255,255,255,0.9)"/>
+  <line x1="49.5" y1="22" x2="48" y2="26" stroke="#555" stroke-width="1.3" stroke-linecap="round"/>
+  <line x1="49.5" y1="22" x2="51" y2="26" stroke="#555" stroke-width="1.3" stroke-linecap="round"/>
+</svg>`,
+
+'copperhead':`<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ch_body" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c87840"/>
+      <stop offset="100%" stop-color="#7a3c10"/>
+    </linearGradient>
+  </defs>
+  <!-- hourglass/chestnut banding pattern of copperhead -->
+  <path d="M8,52 C16,42 14,28 22,18 C30,8 42,10 48,22" stroke="url(#ch_body)" stroke-width="10" stroke-linecap="round" fill="none"/>
+  <!-- hourglass markings - darker at sides, lighter center -->
+  <path d="M8,52 C16,42 14,28 22,18 C30,8 42,10 48,22" stroke="rgba(80,30,5,0.5)" stroke-width="6" stroke-linecap="round" fill="none" stroke-dasharray="5 5"/>
+  <path d="M8,52 C16,42 14,28 22,18 C30,8 42,10 48,22" stroke="rgba(255,180,100,0.2)" stroke-width="2.5" stroke-linecap="round" fill="none" stroke-dasharray="2 8" stroke-dashoffset="1"/>
+  <!-- copper sheen down dorsal -->
+  <path d="M9,50 C17,40 15,26 23,17" stroke="rgba(255,190,100,0.45)" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <!-- broad triangular head - very wide -->
+  <ellipse cx="48.5" cy="22" rx="9" ry="6" fill="#a06028" transform="rotate(28,48.5,22)"/>
+  <ellipse cx="48.5" cy="22" rx="6.5" ry="4.2" fill="#c87840" transform="rotate(28,48.5,22)"/>
+  <!-- heat pits - copperhead's defining feature -->
+  <circle cx="53" cy="18.5" r="1.2" fill="#3a1000" opacity="0.9"/>
+  <circle cx="50" cy="17.5" r="1.2" fill="#3a1000" opacity="0.9"/>
+  <!-- eyes -->
+  <circle cx="52" cy="20" r="2" fill="#0d0500"/><ellipse cx="52" cy="20" rx="0.6" ry="1.4" fill="#1a0800"/><circle cx="52.3" cy="19.6" r="0.4" fill="rgba(255,170,50,0.9)"/>
+  <circle cx="48" cy="20.5" r="2" fill="#0d0500"/><ellipse cx="48" cy="20.5" rx="0.6" ry="1.4" fill="#1a0800"/><circle cx="48.3" cy="20.1" r="0.4" fill="rgba(255,170,50,0.9)"/>
+  <line x1="50" y1="27" x2="48.5" y2="31" stroke="#996020" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="50" y1="27" x2="51.5" y2="31" stroke="#996020" stroke-width="1.4" stroke-linecap="round"/>
+</svg>`,
+
+'boa':`<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="boa_body" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#cc5577"/>
+      <stop offset="100%" stop-color="#661130"/>
+    </radialGradient>
+  </defs>
+  <!-- thick coiled boa constrictor body -->
+  <path d="M8,30 C8,14 20,6 32,8 C44,10 52,22 50,36 C48,48 36,54 24,52 C12,50 6,42 8,30Z" stroke="url(#boa_body)" stroke-width="11" fill="none" stroke-linecap="round"/>
+  <!-- saddle markings characteristic of boa -->
+  <path d="M8,30 C8,14 20,6 32,8 C44,10 52,22 50,36" stroke="rgba(80,0,20,0.5)" stroke-width="7" fill="none" stroke-dasharray="5 6"/>
+  <path d="M50,36 C48,48 36,54 24,52 C12,50 6,42 8,30" stroke="rgba(80,0,20,0.5)" stroke-width="7" fill="none" stroke-dasharray="5 6"/>
+  <!-- lateral sheen -->
+  <path d="M10,28 C10,16 20,8 30,8" stroke="rgba(255,150,180,0.3)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <!-- head on the coil -->
+  <ellipse cx="24.5" cy="52" rx="9" ry="5.5" fill="#992244" transform="rotate(-12,24.5,52)"/>
+  <ellipse cx="24.5" cy="52" rx="6.5" ry="4" fill="#cc4466" transform="rotate(-12,24.5,52)"/>
+  <circle cx="20.5" cy="50" r="2.1" fill="#0d0006"/><circle cx="20.5" cy="50" r="1.2" fill="#1a0010"/><circle cx="21" cy="49.6" r="0.5" fill="rgba(255,120,160,0.9)"/>
+  <circle cx="27" cy="50" r="2.1" fill="#0d0006"/><circle cx="27" cy="50" r="1.2" fill="#1a0010"/><circle cx="27.5" cy="49.6" r="0.5" fill="rgba(255,120,160,0.9)"/>
+  <line x1="24.5" y1="56" x2="23" y2="56" stroke="#993355" stroke-width="1.4" stroke-linecap="round" opacity="0.8"/>
+  <line x1="24.5" y1="56" x2="26" y2="56" stroke="#993355" stroke-width="1.4" stroke-linecap="round" opacity="0.8"/>
+</svg>`,
+
+'cottonmouth':`<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cm_body" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6a8030"/>
+      <stop offset="100%" stop-color="#283c10"/>
+    </linearGradient>
+  </defs>
+  <path d="M8,52 C16,44 14,30 22,20 C30,10 44,12 48,22" stroke="url(#cm_body)" stroke-width="10" stroke-linecap="round" fill="none"/>
+  <!-- muted banding -->
+  <path d="M8,52 C16,44 14,30 22,20 C30,10 44,12 48,22" stroke="rgba(20,30,5,0.45)" stroke-width="6" stroke-linecap="round" fill="none" stroke-dasharray="5 5"/>
+  <path d="M8,52 C16,44 14,30 22,20 C30,10 44,12 48,22" stroke="rgba(160,200,80,0.15)" stroke-width="3" stroke-linecap="round" fill="none" stroke-dasharray="2 8" stroke-dashoffset="1.5"/>
+  <path d="M9,50 C17,42 15,28 23,19" stroke="rgba(170,210,90,0.35)" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <!-- very blocky wide head, jowls -->
+  <ellipse cx="48.5" cy="22" rx="10" ry="6.5" fill="#4a6018" transform="rotate(28,48.5,22)"/>
+  <ellipse cx="48.5" cy="22" rx="7" ry="4.5" fill="#688028" transform="rotate(28,48.5,22)"/>
+  <!-- COTTON MOUTH - white interior mouth visible -->
+  <path d="M45,25 C46,28 50,29 54,27" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.85"/>
+  <circle cx="52.5" cy="19" r="2.1" fill="#0d1005"/><circle cx="52.5" cy="19" r="1.2" fill="#1a1808"/><circle cx="53" cy="18.6" r="0.5" fill="rgba(180,220,80,0.9)"/>
+  <circle cx="48" cy="19.5" r="2.1" fill="#0d1005"/><circle cx="48" cy="19.5" r="1.2" fill="#1a1808"/><circle cx="48.5" cy="19.1" r="0.5" fill="rgba(180,220,80,0.9)"/>
+  <line x1="50" y1="27.5" x2="48.5" y2="32" stroke="#446010" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="50" y1="27.5" x2="51.5" y2="32" stroke="#446010" stroke-width="1.4" stroke-linecap="round"/>
+</svg>`,
+
+'gaboon_viper':`<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gv_body" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9955bb"/>
+      <stop offset="100%" stop-color="#4a1870"/>
+    </linearGradient>
+  </defs>
+  <!-- gaboon viper is THICK - largest fangs of any snake -->
+  <path d="M8,50 C12,38 12,24 20,14 C28,4 42,6 48,18" stroke="url(#gv_body)" stroke-width="12" stroke-linecap="round" fill="none"/>
+  <!-- elaborate geometric pattern -->
+  <path d="M8,50 C12,38 12,24 20,14 C28,4 42,6 48,18" stroke="rgba(40,10,70,0.55)" stroke-width="7" stroke-linecap="round" fill="none" stroke-dasharray="6 5"/>
+  <path d="M8,50 C12,38 12,24 20,14 C28,4 42,6 48,18" stroke="rgba(220,160,255,0.2)" stroke-width="3" stroke-linecap="round" fill="none" stroke-dasharray="3 8" stroke-dashoffset="1.5"/>
+  <!-- butterfly-pattern mid-dorsal stripe -->
+  <path d="M9,48 C13,36 13,22 21,13" stroke="rgba(180,100,220,0.4)" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+  <!-- massive arrow-shaped head, very wide -->
+  <path d="M40,12 C42,6 48,4 52,8 C56,12 56,20 52,24 C50,26 46,26 44,24 C40,22 38,16 40,12Z" fill="#6633aa"/>
+  <path d="M41,13 C43,8 48,6 51,10 C54,14 53,20 50,22 C48,23 45,23 43,21 C40,19 39,16 41,13Z" fill="#8844cc"/>
+  <!-- HORNS - gaboon viper has nasal horns -->
+  <line x1="44" y1="6" x2="43" y2="3" stroke="#6633aa" stroke-width="2" stroke-linecap="round"/>
+  <line x1="48" y1="5" x2="48" y2="2" stroke="#6633aa" stroke-width="2" stroke-linecap="round"/>
+  <!-- massive fang bumps -->
+  <ellipse cx="42" cy="22" rx="2.5" ry="1.5" fill="#441188" transform="rotate(20,42,22)"/>
+  <ellipse cx="52" cy="22" rx="2.5" ry="1.5" fill="#441188" transform="rotate(-20,52,22)"/>
+  <!-- eyes -->
+  <circle cx="43" cy="15" r="2.3" fill="#080010"/><ellipse cx="43" cy="15" rx="0.7" ry="1.6" fill="#110020"/><circle cx="43.3" cy="14.5" r="0.5" fill="rgba(200,120,255,0.9)"/>
+  <circle cx="51" cy="14.5" r="2.3" fill="#080010"/><ellipse cx="51" cy="14.5" rx="0.7" ry="1.6" fill="#110020"/><circle cx="51.3" cy="14" r="0.5" fill="rgba(200,120,255,0.9)"/>
+  <line x1="47" y1="25" x2="45.5" y2="29" stroke="#773399" stroke-width="1.4" stroke-linecap="round"/>
+  <line x1="47" y1="25" x2="48.5" y2="29" stroke="#773399" stroke-width="1.4" stroke-linecap="round"/>
+</svg>`,
+
+'retic_python':`<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="rp_body" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ccaa60"/>
+      <stop offset="100%" stop-color="#6a5018"/>
+    </linearGradient>
+  </defs>
+  <!-- very large python body - thick strokes -->
+  <path d="M5,46 C9,32 7,16 15,8 C23,0 37,2 45,12 C53,22 53,38 45,48 C39,54 28,57 20,54" stroke="url(#rp_body)" stroke-width="13" stroke-linecap="round" fill="none"/>
+  <!-- reticulated = net-like geometric pattern -->
+  <path d="M5,46 C9,32 7,16 15,8 C23,0 37,2 45,12" stroke="rgba(60,35,5,0.5)" stroke-width="8" stroke-linecap="round" fill="none" stroke-dasharray="6 5"/>
+  <path d="M45,12 C53,22 53,38 45,48 C39,54 28,57 20,54" stroke="rgba(60,35,5,0.5)" stroke-width="8" stroke-linecap="round" fill="none" stroke-dasharray="6 5"/>
+  <!-- secondary net lines -->
+  <path d="M5,46 C9,32 7,16 15,8" stroke="rgba(220,190,100,0.25)" stroke-width="3" stroke-linecap="round" fill="none" stroke-dasharray="3 8" stroke-dashoffset="3"/>
+  <!-- dorsal stripe -->
+  <path d="M6,44 C10,30 8,15 16,9" stroke="rgba(255,225,130,0.45)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <!-- large python head -->
+  <ellipse cx="20.5" cy="54" rx="10" ry="6.5" fill="#8a6828" transform="rotate(-18,20.5,54)"/>
+  <ellipse cx="20.5" cy="54" rx="7" ry="4.5" fill="#b08840" transform="rotate(-18,20.5,54)"/>
+  <!-- heat pits (3 per side - python distinguishing feature) -->
+  <circle cx="15" cy="52.5" r="1" fill="#3a1800" opacity="0.85"/>
+  <circle cx="17" cy="51.5" r="1" fill="#3a1800" opacity="0.85"/>
+  <circle cx="19" cy="51" r="1" fill="#3a1800" opacity="0.85"/>
+  <!-- eyes -->
+  <circle cx="16.5" cy="52" r="2.2" fill="#0d0800"/><ellipse cx="16.5" cy="52" rx="0.6" ry="1.5" fill="#1a0e00"/><circle cx="16.8" cy="51.5" r="0.5" fill="rgba(255,190,60,0.9)"/>
+  <circle cx="23.5" cy="51.5" r="2.2" fill="#0d0800"/><ellipse cx="23.5" cy="51.5" rx="0.6" ry="1.5" fill="#1a0e00"/><circle cx="23.8" cy="51" r="0.5" fill="rgba(255,190,60,0.9)"/>
+  <line x1="20.5" y1="58" x2="19" y2="56" stroke="#886618" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+  <line x1="20.5" y1="58" x2="22" y2="56" stroke="#886618" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+</svg>`,
+
+'anaconda':`<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="ana_body" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#3a9060"/>
+      <stop offset="100%" stop-color="#143820"/>
+    </radialGradient>
+  </defs>
+  <!-- thick olive-green anaconda coil -->
+  <path d="M6,30 C6,14 18,4 30,6 C42,8 52,20 50,34 C48,46 36,55 24,53 C12,51 4,44 6,30Z" stroke="url(#ana_body)" stroke-width="13" fill="none" stroke-linecap="round"/>
+  <!-- black oval spots characteristic of anaconda -->
+  <path d="M6,30 C6,14 18,4 30,6 C42,8 52,20 50,34" stroke="rgba(10,30,15,0.55)" stroke-width="8" fill="none" stroke-dasharray="7 6"/>
+  <path d="M50,34 C48,46 36,55 24,53 C12,51 4,44 6,30" stroke="rgba(10,30,15,0.55)" stroke-width="8" fill="none" stroke-dasharray="7 6"/>
+  <!-- lateral spots (smaller) -->
+  <path d="M6,30 C6,14 18,4 30,6" stroke="rgba(80,160,100,0.2)" stroke-width="3" fill="none" stroke-dasharray="3 10" stroke-dashoffset="5"/>
+  <!-- wet sheen -->
+  <path d="M8,28 C8,16 18,7 28,7" stroke="rgba(120,220,150,0.35)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <!-- very wide blunt head -->
+  <ellipse cx="24.5" cy="53" rx="11" ry="7" fill="#205a30" transform="rotate(-15,24.5,53)"/>
+  <ellipse cx="24.5" cy="53" rx="7.5" ry="5" fill="#307840" transform="rotate(-15,24.5,53)"/>
+  <!-- eyes set high on head - aquatic adaptation -->
+  <circle cx="19.5" cy="50.5" r="2.4" fill="#080d06"/><circle cx="19.5" cy="50.5" r="1.4" fill="#101806"/><circle cx="20" cy="50" r="0.6" fill="rgba(100,220,130,0.9)"/>
+  <circle cx="27.5" cy="50" r="2.4" fill="#080d06"/><circle cx="27.5" cy="50" r="1.4" fill="#101806"/><circle cx="28" cy="49.5" r="0.6" fill="rgba(100,220,130,0.9)"/>
+  <line x1="24.5" y1="57.5" x2="23" y2="54" stroke="#307840" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="24.5" y1="57.5" x2="26" y2="54" stroke="#307840" stroke-width="1.5" stroke-linecap="round"/>
+</svg>`,
+
+'burmese_python':`<svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bp_body" cx="45%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#c4aa68"/>
+      <stop offset="100%" stop-color="#5c4818"/>
+    </radialGradient>
+  </defs>
+  <!-- massive burmese python - thickest body -->
+  <path d="M3,32 C3,14 15,2 30,4 C45,6 55,18 53,36 C51,50 39,58 26,57 C13,56 1,48 3,32Z" stroke="url(#bp_body)" stroke-width="15" fill="none" stroke-linecap="round"/>
+  <!-- brown blotch pattern on tan/yellow background -->
+  <path d="M3,32 C3,14 15,2 30,4 C45,6 55,18 53,36" stroke="rgba(55,35,8,0.55)" stroke-width="9" fill="none" stroke-dasharray="8 6"/>
+  <path d="M53,36 C51,50 39,58 26,57 C13,56 1,48 3,32" stroke="rgba(55,35,8,0.55)" stroke-width="9" fill="none" stroke-dasharray="8 6"/>
+  <!-- lighter saddle centers -->
+  <path d="M3,32 C3,14 15,2 30,4" stroke="rgba(230,200,130,0.3)" stroke-width="4" fill="none" stroke-dasharray="4 10" stroke-dashoffset="4"/>
+  <!-- dorsal shine -->
+  <path d="M5,30 C5,16 15,5 28,5" stroke="rgba(255,230,150,0.4)" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <!-- enormous head -->
+  <ellipse cx="26.5" cy="57" rx="13" ry="8" fill="#705828" transform="rotate(-8,26.5,57)"/>
+  <ellipse cx="26.5" cy="57" rx="9" ry="5.5" fill="#988040" transform="rotate(-8,26.5,57)"/>
+  <!-- heat pits along jaw -->
+  <circle cx="18" cy="56" r="1.2" fill="#2a1800" opacity="0.8"/>
+  <circle cx="20.5" cy="54.5" r="1.2" fill="#2a1800" opacity="0.8"/>
+  <circle cx="23" cy="53.8" r="1.2" fill="#2a1800" opacity="0.8"/>
+  <!-- eyes -->
+  <circle cx="20" cy="54" r="2.5" fill="#0d0a04"/><ellipse cx="20" cy="54" rx="0.7" ry="1.7" fill="#1a1406"/><circle cx="20.4" cy="53.5" r="0.6" fill="rgba(255,200,70,0.9)"/>
+  <circle cx="31.5" cy="53.5" r="2.5" fill="#0d0a04"/><ellipse cx="31.5" cy="53.5" rx="0.7" ry="1.7" fill="#1a1406"/><circle cx="31.9" cy="53" r="0.6" fill="rgba(255,200,70,0.9)"/>
+  <line x1="26.5" y1="56" x2="25" y2="52" stroke="#806020" stroke-width="1.6" stroke-linecap="round"/>
+  <line x1="26.5" y1="56" x2="28" y2="52" stroke="#806020" stroke-width="1.6" stroke-linecap="round"/>
+</svg>`
+};
+
+// ─── SNAKE SKIN RENDERER ─────────────────────────────────────────────────────
+// Each species has a getSegColors(i, total, baseColor) -> {body, inner, border, shine}
+// baseColor is the HSL/hex chosen by color wheel — used to tint the pattern
+// i=0 is HEAD, i=total-1 is TAIL
+
+function parseHue(color){
+  // extract hue from hsl(...)
+  const hslM=color.match(/hsl\((\d+(?:\.\d+)?)/);
+  if(hslM)return parseFloat(hslM[1]);
+  // convert hex #rrggbb to hue
+  const hexM=color.match(/^#([0-9a-f]{6})/i);
+  if(hexM){
+    const r=parseInt(hexM[1].slice(0,2),16)/255;
+    const g=parseInt(hexM[1].slice(2,4),16)/255;
+    const b=parseInt(hexM[1].slice(4,6),16)/255;
+    const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min;
+    if(d===0)return 0;
+    let h=max===r?((g-b)/d+6)%6:max===g?(b-r)/d+2:(r-g)/d+4;
+    return h*60;
+  }
+  return 0;
+}
+function shiftHue(h,shift){return((h+shift)%360+360)%360;}
+function segCol(h,s,l){return `hsl(${Math.round(h)},${Math.round(s)}%,${Math.round(l)}%)`;}
+
+const SKINS={
+// ── COLOR RULE: ALL colors derive from wheelHue — zero hardcoded values ──
+// tone1=wheel, tone2=wheel+120° (triadic), tone3=wheel+240° (triadic 3rd)
+// dark=desaturated dark of tone1 — always visually distinct at small size
+
+  black_mamba(i,total,baseColor){
+    const h=parseHue(baseColor);
+    const t=i/total;
+    const l=Math.max(6,20-t*14);   // very dark body, fades to near-black at tail
+    return{
+      body:segCol(h,68,l),
+      inner:segCol(h,90,l+22),      // brighter version of same hue = glowing look
+      border:'rgba(0,0,0,0.75)',
+      shine:segCol(h,100,l+35)+'44' // ultra-bright shine dot
+    };
+  },
+
+  sidewinder(i,total,baseColor){
+    const h=parseHue(baseColor);
+    // 2-tone crossband: tone1 (bright) vs tone3+240° (very different dark)
+    const band=Math.floor(i/3)%2;
+    const h2=shiftHue(h,180);      // complementary = max contrast
+    const l=band===0?52:14;
+    const sat=band===0?72:60;
+    const bh=band===0?h:h2;
+    return{
+      body:segCol(bh,sat,l),
+      inner:segCol(bh,sat+10,l+14),
+      border:band===0?`hsla(${h},40%,8%,0.5)`:`hsla(${h2},30%,5%,0.85)`,
+      shine:band===0?segCol(h,100,l+20)+'44':'rgba(0,0,0,0)'
+    };
+  },
+
+  green_mamba(i,total,baseColor){
+    const h=parseHue(baseColor);
+    const t=i/total;
+    const l=Math.max(28,58-t*28);
+    const tip=i%3===0;
+    const h2=shiftHue(h,60);       // +60° = yellow-adjacent tip
+    return{
+      body:segCol(h,90,l),
+      inner:segCol(h2,100,l+18),   // yellow-shifted inner = scale tips
+      border:`hsla(${h},40%,10%,0.45)`,
+      shine:tip?segCol(h2,100,75)+'88':segCol(h,85,l+10)+'30'
+    };
+  },
+
+  coral_snake(i,total,baseColor){
+    // 3-tone triband — ALWAYS 3 distinct hues that rotate together
+    const h=parseHue(baseColor);
+    const h2=shiftHue(h,120);      // triadic 2nd
+    const h3=shiftHue(h,240);      // triadic 3rd
+    const band=Math.floor(i/2)%4;
+    // pattern: tone1 / tone2 / dark-of-tone3 / tone2
+    const tones=[
+      {body:segCol(h,92,48),  inner:segCol(h,96,70),   border:'rgba(0,0,0,0.65)'},
+      {body:segCol(h2,92,52), inner:segCol(h2,100,76),  border:'rgba(0,0,0,0.55)'},
+      {body:segCol(h3,60,10), inner:segCol(h3,50,20),   border:'rgba(0,0,0,0.9)'},
+      {body:segCol(h2,92,52), inner:segCol(h2,100,76),  border:'rgba(0,0,0,0.55)'},
+    ];
+    const c=tones[band];
+    return{body:c.body,inner:c.inner,border:c.border,shine:segCol(h2,100,85)+'30'};
+  },
+
+  king_cobra(i,total,baseColor){
+    const h=parseHue(baseColor);
+    const t=i/total;
+    const l=Math.max(30,52-t*20);
+    return{
+      body:segCol(h,85,l),
+      inner:segCol(h,100,l+20),    // saturated bright inner = gold glow
+      border:`hsla(${h},40%,12%,0.5)`,
+      shine:segCol(h,100,l+30)+'66'
+    };
+  },
+
+  rattlesnake(i,total,baseColor){
+    const h=parseHue(baseColor);
+    // diamond: bright tone1 vs dark complement
+    const h2=shiftHue(h,180);
+    const diamond=Math.floor(i/5)%2;
+    const l=diamond===0?50:12;
+    const sat=diamond===0?70:55;
+    const bh=diamond===0?h:h2;
+    return{
+      body:segCol(bh,sat,l),
+      inner:segCol(bh,sat,l+16),
+      border:diamond===0?`hsla(${h},35%,8%,0.5)`:`hsla(${h2},30%,4%,0.88)`,
+      shine:diamond===0?segCol(h,100,l+22)+'44':'rgba(0,0,0,0)'
+    };
+  },
+
+  spitting_cobra(i,total,baseColor){
+    const h=parseHue(baseColor);
+    const h2=shiftHue(h,150);      // shifted for collar/inner contrast
+    const t=i/total;
+    const collar=(i>=8&&i<=13);
+    const l=collar?14:Math.max(28,48-t*18);
+    return{
+      body:segCol(collar?h2:h,82,l),
+      inner:segCol(shiftHue(h,90),collar?8:62,collar?0:14), // 3rd tone for inner
+      border:collar?`hsla(${h2},40%,5%,0.88)`:`hsla(${h},40%,10%,0.45)`,
+      shine:collar?'rgba(0,0,0,0)':segCol(h,100,l+24)+'55'
+    };
+  },
+
+  king_snake(i,total,baseColor){
+    // Stark 2-band: dark-of-h vs bright-of-complement
+    const h=parseHue(baseColor);
+    const h2=shiftHue(h,180);
+    const band=Math.floor(i/3)%2;
+    return band===0
+      ? {body:segCol(h,60,8),   inner:segCol(h,50,18),   border:'rgba(0,0,0,0.9)', shine:'rgba(0,0,0,0)'}
+      : {body:segCol(h2,35,88), inner:segCol(h2,20,98),  border:'rgba(0,0,0,0.3)', shine:segCol(h2,60,95)+'77'};
+  },
+
+  copperhead(i,total,baseColor){
+    // Hourglass: bright center, dark+shifted edges
+    const h=parseHue(baseColor);
+    const h2=shiftHue(h,160);
+    const pos=(i%8)/8;
+    const edge=(pos<0.25||pos>0.75);
+    const l=edge?14:54;
+    return{
+      body:segCol(edge?h2:h,78,l),
+      inner:segCol(edge?h2:h,85,l+16),
+      border:edge?`hsla(${h2},40%,5%,0.88)`:`hsla(${h},35%,10%,0.4)`,
+      shine:edge?'rgba(0,0,0,0)':segCol(h,100,l+22)+'55'
+    };
+  },
+
+  boa(i,total,baseColor){
+    const h=parseHue(baseColor);
+    const h2=shiftHue(h,120);      // triadic for saddle blotch contrast
+    const t=i/total;
+    const saddle=(i%6)<2;
+    const l=saddle?12:Math.max(28,44-t*14);
+    return{
+      body:segCol(saddle?h2:h,76,l),
+      inner:segCol(shiftHue(saddle?h2:h,20),80,l+16),
+      border:saddle?`hsla(${h2},40%,4%,0.88)`:`hsla(${h},35%,8%,0.4)`,
+      shine:saddle?'rgba(0,0,0,0)':segCol(h,90,l+20)+'44'
+    };
+  },
+
+  cottonmouth(i,total,baseColor){
+    const h=parseHue(baseColor);
+    const h2=shiftHue(h,180);
+    const band=Math.floor(i/6)%2;
+    const l=band===0?32:12;
+    return{
+      body:segCol(band===0?h:h2,60,l),
+      inner:segCol(shiftHue(band===0?h:h2,25),52,l+18),
+      border:band===0?`hsla(${h},30%,6%,0.5)`:`hsla(${h2},28%,3%,0.88)`,
+      shine:band===0?segCol(h,80,l+18)+'33':'rgba(0,0,0,0)'
+    };
+  },
+
+  gaboon_viper(i,total,baseColor){
+    // 3-tone geometric: tone1 / dark / tone2(+120°)
+    const h=parseHue(baseColor);
+    const h2=shiftHue(h,120);
+    const pos=i%5;
+    // bright segment / near-dark / mid tone / near-dark / bright
+    const tone=pos===2?1:pos===0||pos===4?0:2;
+    const tl=[{h,l:42,s:82},{h:h2,l:38,s:78},{h,l:10,s:55}];
+    const c=tl[tone];
+    return{
+      body:segCol(c.h,c.s,c.l),
+      inner:segCol(shiftHue(c.h,20),c.s+8,c.l+18),
+      border:`hsla(${h},35%,6%,0.75)`,
+      shine:tone===0?segCol(h,100,c.l+28)+'55':tone===1?segCol(h2,100,c.l+28)+'44':'rgba(0,0,0,0)'
+    };
+  },
+
+  retic_python(i,total,baseColor){
+    // Net: 3 tones cycling every 7 — tan / dark / mid
+    const h=parseHue(baseColor);
+    const h2=shiftHue(h,130);
+    const net=i%7;
+    const l=net<2?10:net<4?52:26;
+    const sat=net<2?60:net<4?65:72;
+    const bh=net<2?h2:h;          // dark blocks use shifted hue
+    return{
+      body:segCol(bh,sat,l),
+      inner:segCol(shiftHue(bh,15),sat+8,l+18),
+      border:net<2?`hsla(${h2},35%,4%,0.88)`:`hsla(${h},30%,8%,0.4)`,
+      shine:net>=2&&net<4?segCol(h,100,l+22)+'44':'rgba(0,0,0,0)'
+    };
+  },
+
+  anaconda(i,total,baseColor){
+    const h=parseHue(baseColor);
+    const h2=shiftHue(h,150);     // shifted for spot contrast
+    const spot=(i%5)===0;
+    const l=spot?8:38;
+    return{
+      body:segCol(spot?h2:h,spot?65:72,l),
+      inner:segCol(shiftHue(spot?h2:h,25),spot?55:86,l+20),
+      border:spot?`hsla(${h2},35%,3%,0.9)`:`hsla(${h},28%,6%,0.4)`,
+      shine:spot?'rgba(0,0,0,0)':segCol(h,85,l+18)+'33'
+    };
+  },
+
+  burmese_python(i,total,baseColor){
+    const h=parseHue(baseColor);
+    const h2=shiftHue(h,140);     // shifted for blotch contrast
+    const blotch=(i%8)<3;
+    const l=blotch?12:52;
+    return{
+      body:segCol(blotch?h2:h,blotch?65:58,l),
+      inner:segCol(shiftHue(blotch?h2:h,15),blotch?62:58,l+18),
+      border:blotch?`hsla(${h2},35%,4%,0.9)`:`hsla(${h},30%,8%,0.4)`,
+      shine:blotch?'rgba(0,0,0,0)':segCol(h,85,l+20)+'3a'
+    };
+  }
+};
+
+function getSegColors(speciesId,i,total,baseColor){
+  const fn=SKINS[speciesId];
+  if(fn)return fn(i,total,baseColor);
+  // fallback plain
+  return{body:baseColor,inner:'rgba(255,255,255,0.18)',border:'rgba(0,0,0,0.15)',shine:'rgba(255,255,255,0.28)'};
+}
+
+// ─── DIFFICULTY ────────────────────────────────────────────────────────────
+const DIFF={
+  easy:  {label:'EASY',   spdScale:0.60,aggScale:0.50,reactionT:0.30,botCount:8,  color:'#00ff88'},
+  medium:{label:'MEDIUM', spdScale:0.80,aggScale:0.70,reactionT:0.22,botCount:12, color:'#ffcc00'},
+  hard:  {label:'HARD',   spdScale:1.00,aggScale:0.90,reactionT:0.14,botCount:14, color:'#ff8800'},
+  insane:{label:'INSANE', spdScale:1.20,aggScale:1.00,reactionT:0.07,botCount:14, color:'#ff2244'}
+};
+let currentDiff='easy';
+
+const CFG={
+  WORLD:3000,BASE:145,
+  INVINCE:4000,FOOD_AMB:110,VAC:32,
+  PAD_R:280, // hot zone radius
+  PAD_FOOD:18,  // food per pad
+  PADS:[[1500,1500],[700,700],[2300,700],[700,2300],[2300,2300]],
+  PWR_CD:9000,BOOST_DRAIN:0.12,
+  PLAYER_LIVES:3,
+  MAX_LIVES:5,
+  LIFE_BASE_SCORE:10000, // first extra life at 10k, doubles each time
+  NAMES:['APEX','VIPER','CUDA','BEAST','PHANTOM','ZERO','TANK','FLASH','COBRA','TITAN','NOVA','SHADE','BLAZE','STORM','STRIX','MORPH']
+};
+
+let gs={best:0,games:0,playerName:''};
+try{const d=JSON.parse(localStorage.getItem('snakeULTRA2')||'{}');gs={...gs,...d};}catch(e){}
+let selId='black_mamba';
+let sColors={};
+let previewT=0,previewRaf=null;
+function startPreviewAnim(){
+  if(previewRaf)return;
+  (function loop(){
+    previewT+=0.03;
+    drawSnakePreview();
+    document.querySelectorAll('.card-snake-cv').forEach(cv=>{
+      drawCardSnake(cv,cv.dataset.sp,sColors[cv.dataset.sp]||SPECIES.find(s=>s.id===cv.dataset.sp).defCol,previewT);
+    });
+    previewRaf=requestAnimationFrame(loop);
+  })();
+}
+function stopPreviewAnim(){if(previewRaf){cancelAnimationFrame(previewRaf);previewRaf=null;}}
+SPECIES.forEach(s=>{sColors[s.id]=s.defCol;});
+let game=null;
+
+// ─── VECTOR ────────────────────────────────────────────────────────────────
+class V{
+  constructor(x,y){this.x=x;this.y=y;}
+  add(v){return new V(this.x+v.x,this.y+v.y);}
+  sub(v){return new V(this.x-v.x,this.y-v.y);}
+  mul(n){return new V(this.x*n,this.y*n);}
+  mag(){return Math.sqrt(this.x*this.x+this.y*this.y);}
+  norm(){const m=this.mag();return m?new V(this.x/m,this.y/m):new V(0,0);}
+  lim(max){return this.mag()>max?this.norm().mul(max):new V(this.x,this.y);}
+  dist(v){const dx=this.x-v.x,dy=this.y-v.y;return Math.sqrt(dx*dx+dy*dy);}
+  clone(){return new V(this.x,this.y);}
+}
+
+// ─── FOOD ──────────────────────────────────────────────────────────────────
+class Food{
+  constructor(x,y,type='amb',color,scoreVal=0){
+    this.pos=new V(x,y);this.type=type;
+    this.color=color||`hsl(${Math.random()*60+20},100%,62%)`;
+    this.r=type==='score'?8:type==='death'?7:type==='boost'?4:5;
+    this.baseVal=scoreVal||(type==='score'?10:type==='death'?3:type==='boost'?1:2);
+    this.pulse=Math.random()*Math.PI*2;
+    this.alive=true;this.age=0;
+    this.maxAge=type==='boost'?6:Infinity;
+  }
+  update(dt){this.pulse+=dt*3;this.age+=dt;if(this.age>=this.maxAge)this.alive=false;}
+  draw(ctx,cam){
+    if(!this.alive)return;
+    const sx=this.pos.x-cam.x,sy=this.pos.y-cam.y;
+    if(sx<-PAD||sx>ctx.canvas.width+PAD||sy<-PAD||sy>ctx.canvas.height+PAD)return;
+    const sc=1+Math.sin(this.pulse)*0.18;
+    ctx.save();ctx.shadowBlur=this.type==='score'?28:this.type==='death'?22:10;ctx.shadowColor=this.color;
+    ctx.fillStyle=this.color;ctx.beginPath();ctx.arc(sx,sy,this.r*sc,0,Math.PI*2);ctx.fill();
+    if(this.type==='death'||this.type==='score'){ctx.strokeStyle='rgba(255,255,255,0.32)';ctx.lineWidth=1.5;ctx.stroke();}
+    if(this.type==='score'){ctx.fillStyle='rgba(255,255,255,0.55)';ctx.beginPath();ctx.arc(sx-this.r*0.28*sc,sy-this.r*0.28*sc,this.r*0.25*sc,0,Math.PI*2);ctx.fill();}
+    ctx.restore();
+  }
+}
+
+// ─── SLOW ZONE ─────────────────────────────────────────────────────────────
+class SlowZone{
+  constructor(x,y,dur,color,owner){
+    this.pos=new V(x,y);this.r=30;this.dur=dur;this.age=0;
+    this.color=color;this.alive=true;this.owner=owner;
+  }
+  update(dt){this.age+=dt;if(this.age>=this.dur)this.alive=false;}
+  draw(ctx,cam){
+    if(!this.alive)return;
+    const sx=this.pos.x-cam.x,sy=this.pos.y-cam.y;
+    const a=(1-this.age/this.dur)*0.28;
+    ctx.save();ctx.globalAlpha=a;ctx.fillStyle=this.color;
+    ctx.beginPath();ctx.arc(sx,sy,this.r,0,Math.PI*2);ctx.fill();ctx.restore();
+  }
+}
+
+// ─── PROJECTILE ────────────────────────────────────────────────────────────
+class Proj{
+  constructor(x,y,ang,color,owner){
+    this.pos=new V(x,y);this.vel=new V(Math.cos(ang)*410,Math.sin(ang)*410);
+    this.color=color;this.owner=owner;this.r=9;this.alive=true;this.age=0;
+  }
+  update(dt){
+    this.pos=this.pos.add(this.vel.mul(dt));this.age+=dt;
+    if(this.age>3.5)this.alive=false;
+    if(this.pos.x<0||this.pos.x>CFG.WORLD||this.pos.y<0||this.pos.y>CFG.WORLD)this.alive=false;
+  }
+  draw(ctx,cam){
+    if(!this.alive)return;
+    const sx=this.pos.x-cam.x,sy=this.pos.y-cam.y;
+    ctx.save();ctx.shadowBlur=20;ctx.shadowColor=this.color;ctx.fillStyle=this.color;
+    ctx.beginPath();ctx.arc(sx,sy,this.r,0,Math.PI*2);ctx.fill();ctx.restore();
+  }
+}
+
+// ─── DAMAGE NUMBER ─────────────────────────────────────────────────────────
+class DmgNum{
+  constructor(x,y,txt,color='#ff3300'){this.wx=x;this.wy=y;this.vy=-65;this.txt=String(txt);this.color=color;this.life=1.4;}
+  update(dt){this.wy+=this.vy*dt;this.vy*=0.93;this.life-=dt;}
+  draw(ctx,cam){
+    if(this.life<=0)return;
+    const a=Math.max(0,this.life/1.4);
+    ctx.save();ctx.globalAlpha=a;
+    ctx.font='bold 13px "Press Start 2P"';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.strokeStyle='#000';ctx.lineWidth=3;ctx.strokeText(this.txt,this.wx-cam.x,this.wy-cam.y);
+    ctx.fillStyle=this.color;ctx.fillText(this.txt,this.wx-cam.x,this.wy-cam.y);
+    ctx.restore();
+  }
+}
+
+
+// ─── SPECIES HEAD RENDERER ────────────────────────────────────────────────────
+// Each species gets a unique head: shape markings + eye style + tongue
+// Colors shift with wheel but MARKS stay species-locked
+function drawSnakeHead(ctx, speciesId, hx, hy, r, angle, baseColor, alpha, tongueT){
+  tongueT=tongueT||0;
+  const h=parseHue(baseColor);
+  const h2=shiftHue(h,120), h3=shiftHue(h,240);
+  const h180=shiftHue(h,180);
+  ctx.save();
+  ctx.globalAlpha=alpha;
+  ctx.translate(hx,hy);
+  ctx.rotate(angle);
+
+  // ── helper: draw eye ────────────────────────────────────────────────────
+  // eyeType: 'round','slit','wide','bead','cat'
+  function eye(ox,oy,er,eyeType,irisCol,pupilCol){
+    // sclera
+    ctx.beginPath();ctx.arc(ox,oy,er,0,Math.PI*2);
+    ctx.fillStyle=eyeType==='bead'?irisCol:'white';ctx.fill();
+    // iris
+    if(eyeType!=='bead'){
+      ctx.beginPath();ctx.arc(ox,oy,er*0.72,0,Math.PI*2);
+      ctx.fillStyle=irisCol;ctx.fill();
+    }
+    // pupil
+    ctx.fillStyle=pupilCol||'#000';
+    if(eyeType==='slit'){
+      ctx.beginPath();ctx.ellipse(ox+er*0.15,oy,er*0.22,er*0.62,0,0,Math.PI*2);ctx.fill();
+    }else if(eyeType==='cat'){
+      ctx.beginPath();ctx.ellipse(ox+er*0.12,oy,er*0.18,er*0.68,0,0,Math.PI*2);ctx.fill();
+    }else if(eyeType==='wide'){
+      ctx.beginPath();ctx.arc(ox+er*0.2,oy,er*0.42,0,Math.PI*2);ctx.fill();
+    }else{
+      ctx.beginPath();ctx.arc(ox+er*0.18,oy,er*0.34,0,Math.PI*2);ctx.fill();
+    }
+    // shine dot
+    ctx.fillStyle='rgba(255,255,255,0.85)';
+    ctx.beginPath();ctx.arc(ox-er*0.22,oy-er*0.24,er*0.16,0,Math.PI*2);ctx.fill();
+  }
+
+  // ── helper: tongue — animated flick ──────────────────────────────────────
+  function tongue(len,col,forked){
+    // flick cycle: extend out for ~0.3s every 1.5s
+    const flick=Math.max(0,Math.sin(tongueT*1.1));
+    const ext=flick>0.65?1.0:flick>0.4?0.5:0.0; // snap in/out like real snake
+    if(ext===0)return; // tongue retracted
+    const tlen=len*ext;
+    ctx.strokeStyle=col;ctx.lineWidth=r*0.10;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(r*0.85,0);ctx.lineTo(r*0.85+tlen,0);ctx.stroke();
+    if(forked&&ext>0.4){
+      ctx.lineWidth=r*0.07;
+      const spread=0.35*ext;
+      ctx.beginPath();ctx.moveTo(r*0.85+tlen,0);
+      ctx.lineTo(r*0.85+tlen+tlen*0.45,-tlen*spread);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(r*0.85+tlen,0);
+      ctx.lineTo(r*0.85+tlen+tlen*0.45,+tlen*spread);ctx.stroke();
+    }
+  }
+
+  // ── helper: marking line ─────────────────────────────────────────────────
+  function mark(x1,y1,x2,y2,col,lw){
+    ctx.strokeStyle=col;ctx.lineWidth=lw||r*0.15;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  }
+
+  const eo=r*0.48, es=r*0.34; // eye offset, eye size
+
+  switch(speciesId){
+
+    case 'black_mamba':
+      // Jet-black coffin-shaped head, tiny pale eyes, bright tongue
+      ctx.beginPath();
+      ctx.ellipse(0,0,r*1.1,r*0.82,0,0,Math.PI*2);
+      ctx.fillStyle=segCol(h,55,10);ctx.fill();
+      // pale eye ring
+      eye( eo*0.9,-r*0.38,es,'round',segCol(h,70,22),segCol(h,80,8));
+      eye( eo*0.9, r*0.38,es,'round',segCol(h,70,22),segCol(h,80,8));
+      tongue(r*0.7,segCol(h,90,65),true);
+      break;
+
+    case 'sidewinder':
+      // Wide flat triangular head, big slit pupils, horn bumps above eyes
+      ctx.beginPath();
+      ctx.moveTo(r,-0);ctx.lineTo(r*0.3,-r*0.9);ctx.lineTo(-r*0.6,-r*0.85);
+      ctx.lineTo(-r*0.9,0);ctx.lineTo(-r*0.6,r*0.85);ctx.lineTo(r*0.3,r*0.9);
+      ctx.closePath();ctx.fillStyle=segCol(h,62,46);ctx.fill();
+      // heat pit marks
+      mark(-r*0.1,-r*0.55,-r*0.1,-r*0.28,segCol(h,50,22),r*0.12);
+      mark(-r*0.1, r*0.55,-r*0.1, r*0.28,segCol(h,50,22),r*0.12);
+      eye(eo*0.8,-r*0.42,es,'slit',segCol(h,80,38),segCol(h,50,8));
+      eye(eo*0.8, r*0.42,es,'slit',segCol(h,80,38),segCol(h,50,8));
+      tongue(r*0.6,segCol(h180,85,62),true);
+      break;
+
+    case 'green_mamba':
+      // Narrow elegant head, large round emerald eyes, bright tongue
+      ctx.beginPath();
+      ctx.ellipse(0,0,r*1.05,r*0.72,0,0,Math.PI*2);
+      ctx.fillStyle=segCol(h,88,42);ctx.fill();
+      // bright lip line
+      mark(-r*0.2,-r*0.62,r*0.7,-r*0.32,segCol(h2,100,72),r*0.12);
+      mark(-r*0.2, r*0.62,r*0.7, r*0.32,segCol(h2,100,72),r*0.12);
+      eye(eo,-r*0.36,es*1.1,'wide',segCol(h2,100,52),'#000');
+      eye(eo, r*0.36,es*1.1,'wide',segCol(h2,100,52),'#000');
+      tongue(r*0.8,segCol(h2,100,72),true);
+      break;
+
+    case 'coral_snake':
+      // Small blunt rounded head, tiny bead eyes, red/yellow snout band
+      ctx.beginPath();
+      ctx.ellipse(0,0,r*0.98,r*0.78,0,0,Math.PI*2);
+      ctx.fillStyle=segCol(h,90,44);ctx.fill();
+      // yellow snout band
+      ctx.beginPath();ctx.ellipse(r*0.5,0,r*0.32,r*0.6,0,0,Math.PI*2);
+      ctx.fillStyle=segCol(h2,100,60);ctx.fill();
+      // black band behind eyes
+      ctx.beginPath();ctx.rect(-r*0.1,-r*0.75,r*0.28,r*1.5);
+      ctx.fillStyle=segCol(h3,50,8);ctx.fill();
+      eye(eo*0.7,-r*0.36,es*0.8,'bead',segCol(h3,30,8),'#000');
+      eye(eo*0.7, r*0.36,es*0.8,'bead',segCol(h3,30,8),'#000');
+      tongue(r*0.55,segCol(h,95,55),true);
+      break;
+
+    case 'king_cobra':
+      // Hood-flared wide oval, regal amber, strong chin line
+      ctx.beginPath();
+      ctx.ellipse(0,0,r*1.08,r*0.95,0,0,Math.PI*2);
+      ctx.fillStyle=segCol(h,82,42);ctx.fill();
+      // hood chevron marking
+      ctx.beginPath();
+      ctx.moveTo(-r*0.3,-r*0.82);ctx.lineTo(r*0.2,0);ctx.lineTo(-r*0.3,r*0.82);
+      ctx.strokeStyle=segCol(h,40,18);ctx.lineWidth=r*0.2;ctx.stroke();
+      // chin plate
+      mark(-r*0.5,0,r*0.8,0,segCol(h2,80,72),r*0.14);
+      eye(eo*0.85,-r*0.4,es,'round',segCol(h,100,58),segCol(h,60,12));
+      eye(eo*0.85, r*0.4,es,'round',segCol(h,100,58),segCol(h,60,12));
+      tongue(r*0.65,segCol(h,80,55),true);
+      break;
+
+    case 'rattlesnake':
+      // Wide diamond head, deep heat pits, vertical slit pupils
+      ctx.beginPath();
+      ctx.moveTo(r*0.9,0);ctx.lineTo(r*0.2,-r);ctx.lineTo(-r*0.7,-r*0.8);
+      ctx.lineTo(-r*0.85,0);ctx.lineTo(-r*0.7,r*0.8);ctx.lineTo(r*0.2,r);
+      ctx.closePath();ctx.fillStyle=segCol(h,65,38);ctx.fill();
+      // diamond head pattern
+      ctx.beginPath();ctx.ellipse(0,0,r*0.5,r*0.38,0,0,Math.PI*2);
+      ctx.fillStyle=segCol(h,55,24);ctx.fill();
+      // heat pits (2 per side)
+      ctx.fillStyle=segCol(h,40,16);
+      [[-0.18,-0.65],[-0.18,0.65],[0.18,-0.58],[0.18,0.58]].forEach(([x,y])=>{
+        ctx.beginPath();ctx.arc(r*x,r*y,r*0.1,0,Math.PI*2);ctx.fill();
+      });
+      eye(eo*0.78,-r*0.44,es,'slit',segCol(h,70,42),segCol(h,30,8));
+      eye(eo*0.78, r*0.44,es,'slit',segCol(h,70,42),segCol(h,30,8));
+      tongue(r*0.6,segCol(h,65,48),true);
+      break;
+
+    case 'spitting_cobra':
+      // Spread hood oval, neck collar marking, forward-facing venom holes
+      ctx.beginPath();
+      ctx.ellipse(0,0,r*1.04,r*0.9,0,0,Math.PI*2);
+      ctx.fillStyle=segCol(h,80,40);ctx.fill();
+      // collar band
+      ctx.beginPath();ctx.ellipse(-r*0.25,0,r*0.38,r*0.78,0,0,Math.PI*2);
+      ctx.fillStyle=segCol(h,50,16);ctx.fill();
+      // venom spit holes
+      ctx.fillStyle=segCol(h2,100,65);
+      ctx.beginPath();ctx.arc(r*0.72,-r*0.25,r*0.1,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(r*0.72, r*0.25,r*0.1,0,Math.PI*2);ctx.fill();
+      eye(eo*0.82,-r*0.38,es,'round',segCol(h,85,48),segCol(h,40,10));
+      eye(eo*0.82, r*0.38,es,'round',segCol(h,85,48),segCol(h,40,10));
+      tongue(r*0.55,segCol(h2,90,60),true);
+      break;
+
+    case 'king_snake':
+      // Bold rounded head, white chin bar, large round eyes
+      ctx.beginPath();
+      ctx.ellipse(0,0,r*1.0,r*0.82,0,0,Math.PI*2);
+      ctx.fillStyle=segCol(h,55,10);ctx.fill();
+      // white/bright chin bar — species signature
+      ctx.beginPath();ctx.ellipse(r*0.15,0,r*0.6,r*0.45,0,0,Math.PI*2);
+      ctx.fillStyle=segCol(h180,30,88);ctx.fill();
+      // eye band stripe
+      ctx.beginPath();ctx.rect(-r*0.22,-r*0.8,r*0.3,r*1.6);
+      ctx.fillStyle=segCol(h180,25,82);ctx.fill();
+      eye(eo*0.85,-r*0.38,es,'round',segCol(h,20,15),'#000');
+      eye(eo*0.85, r*0.38,es,'round',segCol(h,20,15),'#000');
+      tongue(r*0.6,segCol(h180,35,70),true);
+      break;
+
+    case 'copperhead':
+      // Broad copper triangular head, heat pits visible, hourglass brow
+      ctx.beginPath();
+      ctx.moveTo(r*0.95,0);ctx.lineTo(r*0.1,-r*0.9);ctx.lineTo(-r*0.85,-r*0.82);
+      ctx.lineTo(-r,-0);ctx.lineTo(-r*0.85,r*0.82);ctx.lineTo(r*0.1,r*0.9);
+      ctx.closePath();ctx.fillStyle=segCol(h,75,44);ctx.fill();
+      // copper brow highlight
+      ctx.beginPath();ctx.ellipse(r*0.1,0,r*0.58,r*0.35,0,0,Math.PI*2);
+      ctx.fillStyle=segCol(h,85,60);ctx.fill();
+      // heat pits
+      ctx.fillStyle=segCol(h,35,14);
+      ctx.beginPath();ctx.arc(r*0.3,-r*0.6,r*0.1,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(r*0.3, r*0.6,r*0.1,0,Math.PI*2);ctx.fill();
+      eye(eo*0.78,-r*0.42,es,'cat',segCol(h,85,48),segCol(h,30,8));
+      eye(eo*0.78, r*0.42,es,'cat',segCol(h,85,48),segCol(h,30,8));
+      tongue(r*0.6,segCol(h,70,52),true);
+      break;
+
+    case 'boa':
+      // Large round boxy head, thick body connection, warm saddle marking
+      ctx.beginPath();
+      ctx.ellipse(0,0,r*1.06,r*0.94,0,0,Math.PI*2);
+      ctx.fillStyle=segCol(h,72,34);ctx.fill();
+      // saddle brow mark
+      ctx.beginPath();ctx.ellipse(-r*0.1,0,r*0.55,r*0.4,0,0,Math.PI*2);
+      ctx.fillStyle=segCol(h2,70,22);ctx.fill();
+      // lip scales
+      mark(-r*0.6,-r*0.7,r*0.7,-r*0.28,segCol(h,55,55),r*0.1);
+      mark(-r*0.6, r*0.7,r*0.7, r*0.28,segCol(h,55,55),r*0.1);
+      eye(eo*0.88,-r*0.4,es,'round',segCol(h2,70,38),'#000');
+      eye(eo*0.88, r*0.4,es,'round',segCol(h2,70,38),'#000');
+      tongue(r*0.6,segCol(h,80,60),true);
+      break;
+
+    case 'cottonmouth':
+      // Wide blocky head, WHITE MOUTH lining on jaw — defining feature
+      ctx.beginPath();
+      ctx.ellipse(0,0,r*1.08,r*0.96,0,0,Math.PI*2);
+      ctx.fillStyle=segCol(h,58,28);ctx.fill();
+      // white mouth interior — species signature
+      ctx.beginPath();ctx.ellipse(r*0.3,0,r*0.55,r*0.38,0,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,0.88)';ctx.fill();
+      ctx.beginPath();ctx.ellipse(r*0.3,0,r*0.45,r*0.28,0,0,Math.PI*2);
+      ctx.fillStyle=segCol(h2,50,70);ctx.fill();
+      eye(eo*0.82,-r*0.42,es,'slit',segCol(h,70,36),segCol(h,30,8));
+      eye(eo*0.82, r*0.42,es,'slit',segCol(h,70,36),segCol(h,30,8));
+      tongue(r*0.55,segCol(h,55,45),true);
+      break;
+
+    case 'gaboon_viper':
+      // MASSIVE wide arrow head, twin nasal horns — unmistakable
+      ctx.beginPath();
+      ctx.moveTo(r,-0);ctx.lineTo(r*0.2,-r*1.05);ctx.lineTo(-r*0.5,-r*1.0);
+      ctx.lineTo(-r*0.95,-r*0.5);ctx.lineTo(-r,-0);ctx.lineTo(-r*0.95,r*0.5);
+      ctx.lineTo(-r*0.5,r*1.0);ctx.lineTo(r*0.2,r*1.05);
+      ctx.closePath();ctx.fillStyle=segCol(h,72,30);ctx.fill();
+      // NASAL HORNS — species signature
+      ctx.fillStyle=segCol(h,60,18);
+      ctx.beginPath();ctx.ellipse(r*0.6,-r*0.5,r*0.15,r*0.32,0.3,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.ellipse(r*0.6, r*0.5,r*0.15,r*0.32,-0.3,0,Math.PI*2);ctx.fill();
+      // geometric brow pattern
+      ctx.beginPath();ctx.moveTo(-r*0.2,-r*0.55);ctx.lineTo(r*0.3,0);ctx.lineTo(-r*0.2,r*0.55);
+      ctx.strokeStyle=segCol(h3,60,14);ctx.lineWidth=r*0.2;ctx.stroke();
+      // large fang bumps
+      ctx.fillStyle=segCol(h,45,16);
+      ctx.beginPath();ctx.ellipse(r*0.62,-r*0.32,r*0.22,r*0.14,0.4,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.ellipse(r*0.62, r*0.32,r*0.22,r*0.14,-0.4,0,Math.PI*2);ctx.fill();
+      eye(eo*0.65,-r*0.52,es,'cat',segCol(h3,80,40),segCol(h,30,8));
+      eye(eo*0.65, r*0.52,es,'cat',segCol(h3,80,40),segCol(h,30,8));
+      tongue(r*0.45,segCol(h,75,50),true);
+      break;
+
+    case 'retic_python':
+      // Large oval head, multiple heat pits along jaw, net brow mark
+      ctx.beginPath();
+      ctx.ellipse(0,0,r*1.1,r*0.92,0,0,Math.PI*2);
+      ctx.fillStyle=segCol(h,60,44);ctx.fill();
+      // net brow mark
+      ctx.beginPath();ctx.rect(-r*0.6,-r*0.5,r*1.0,r*0.38);
+      ctx.fillStyle=segCol(h,45,22);ctx.fill();
+      ctx.beginPath();ctx.rect(-r*0.6, r*0.12,r*1.0,r*0.38);
+      ctx.fillStyle=segCol(h,45,22);ctx.fill();
+      // 3 heat pits per side
+      ctx.fillStyle=segCol(h,35,16);
+      [-0.68,-0.45,-0.22].forEach(x=>{
+        ctx.beginPath();ctx.arc(r*x,-r*0.78,r*0.09,0,Math.PI*2);ctx.fill();
+        ctx.beginPath();ctx.arc(r*x, r*0.78,r*0.09,0,Math.PI*2);ctx.fill();
+      });
+      eye(eo*0.9,-r*0.4,es,'slit',segCol(h,75,40),segCol(h,30,8));
+      eye(eo*0.9, r*0.4,es,'slit',segCol(h,75,40),segCol(h,30,8));
+      tongue(r*0.65,segCol(h2,80,62),true);
+      break;
+
+    case 'anaconda':
+      // Eyes SET HIGH — aquatic adaptation, wide flat oval, nostrils on top
+      ctx.beginPath();
+      ctx.ellipse(0,0,r*1.08,r*0.88,0,0,Math.PI*2);
+      ctx.fillStyle=segCol(h,68,30);ctx.fill();
+      // nostrils on TOP of head (aquatic marker)
+      ctx.fillStyle=segCol(h,50,14);
+      ctx.beginPath();ctx.ellipse(r*0.5,-r*0.3,r*0.12,r*0.08,-0.4,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.ellipse(r*0.5, r*0.3,r*0.12,r*0.08,0.4,0,Math.PI*2);ctx.fill();
+      // spot brow
+      ctx.beginPath();ctx.ellipse(-r*0.1,0,r*0.42,r*0.3,0,0,Math.PI*2);
+      ctx.fillStyle=segCol(h2,60,14);ctx.fill();
+      // EYES HIGH ON HEAD — aquatic signature
+      eye(r*0.28,-r*0.68,es*0.95,'round',segCol(h,80,38),'#000');
+      eye(r*0.28, r*0.68,es*0.95,'round',segCol(h,80,38),'#000');
+      tongue(r*0.6,segCol(h,72,52),true);
+      break;
+
+    case 'burmese_python':
+      // LARGEST head — thick oval, big jaw muscles, arrow brow mark
+      ctx.beginPath();
+      ctx.ellipse(0,0,r*1.15,r*1.02,0,0,Math.PI*2);
+      ctx.fillStyle=segCol(h,55,46);ctx.fill();
+      // jaw muscle bulge
+      ctx.beginPath();ctx.ellipse(-r*0.35,-r*0.72,r*0.45,r*0.28,0.3,0,Math.PI*2);
+      ctx.fillStyle=segCol(h,50,38);ctx.fill();
+      ctx.beginPath();ctx.ellipse(-r*0.35, r*0.72,r*0.45,r*0.28,-0.3,0,Math.PI*2);
+      ctx.fillStyle=segCol(h,50,38);ctx.fill();
+      // arrow brow mark
+      ctx.beginPath();
+      ctx.moveTo(r*0.5,0);ctx.lineTo(-r*0.15,-r*0.55);ctx.lineTo(-r*0.15,r*0.55);
+      ctx.closePath();ctx.fillStyle=segCol(h2,60,24);ctx.fill();
+      // 4 heat pit rows per side
+      ctx.fillStyle=segCol(h,35,18);
+      [-0.65,-0.42,-0.2,0.0].forEach(x=>{
+        ctx.beginPath();ctx.arc(r*x,-r*0.84,r*0.09,0,Math.PI*2);ctx.fill();
+        ctx.beginPath();ctx.arc(r*x, r*0.84,r*0.09,0,Math.PI*2);ctx.fill();
+      });
+      eye(eo*0.88,-r*0.44,es,'slit',segCol(h,70,38),segCol(h,30,10));
+      eye(eo*0.88, r*0.44,es,'slit',segCol(h,70,38),segCol(h,30,10));
+      tongue(r*0.62,segCol(h,65,52),true);
+      break;
+
+    default:{
+      // fallback generic eyes
+      const eo2=r*0.48,es2=r*0.34;
+      [[-.6],[.6]].forEach(([d])=>{
+        ctx.beginPath();ctx.arc(Math.cos(d)*eo2*r/r,Math.sin(d)*eo2*r/r,es2,0,Math.PI*2);
+        ctx.fillStyle='white';ctx.fill();
+        ctx.beginPath();ctx.arc(Math.cos(d)*eo2*r/r+0.5,Math.sin(d)*eo2*r/r+0.5,es2*0.38,0,Math.PI*2);
+        ctx.fillStyle='#000';ctx.fill();
+      });
+    }
+  }
+
+  ctx.restore();
+}
+// ─── SNAKE ─────────────────────────────────────────────────────────────────
+class Snake{
+  constructor(x,y,name,isPlayer,speciesId,color){
+    const sp=SPECIES.find(s=>s.id===speciesId)||SPECIES[0];
+    this.sp=sp;this.speciesId=speciesId;
+    this.pos=new V(x,y);this.angle=Math.random()*Math.PI*2;
+    this.vel=new V(Math.cos(this.angle),Math.sin(this.angle));
+    this.name=name;this.isPlayer=isPlayer;
+    this.color=color||sp.defCol;
+    this.baseR=8;this.r=this.baseR;
+    this.segs=[];this.len=3;this.targetLen=3;
+    this.score=0;this.alive=true;this.boosting=false;
+    this.invince=false;this.invTimer=0;
+    this.kills=0;this.deaths=0;
+    this.hp=sp.hp;this.maxHp=sp.hp;
+    this.atk=sp.atk;
+    this.spdMult=sp.spd;
+    this.bstMult=sp.bst;
+    this.flashT=0;
+    this.debuffs={}; // {slow:0.5, stunEnd:timestamp}
+    this.pwrActive=false;this.pwrTimer=0;this.pwrCd=0;
+    this.boostLen=0;
+    this.feedingFrenzy=false;this.ffTimer=0;
+    this.stillTimer=0;this.wasMoving=false;
+    this.conCircleTimer=0;
+    this.circleTarget=null;
+    this.conAngleLast=null;
+    this.tongueT=Math.random()*Math.PI*2; // offset so snakes flick at different times
+    this.nullField=false;this.nullTimer=0;
+    this.tankMode=false;this.tankTimer=0;
+    this.neurostrike=false;this.neuroTimer=0;
+    this.strikeCoil=false;this.strikeTimer=0;
+    this.fangLock=false;this.fangTimer=0;
+    this.scaleP=Array.from({length:20},()=>Math.random()*0.3+0.7);
+    this.spawnX=x;this.spawnY=y;
+    for(let i=0;i<20;i++)this.segs.push(new V(x-i*this.r*1.4,y));
+    if(isPlayer)this.makeInvince(CFG.INVINCE);
+  }
+  getSpd(){
+    let s=CFG.BASE*this.spdMult;
+    if(this.boosting)s*=this.bstMult;
+    if(this.feedingFrenzy)s*=1.4;
+    if(this.debuffs.slow)s*=(1-this.debuffs.slow);
+    if(this.debuffs.stunEnd&&Date.now()<this.debuffs.stunEnd)s=0;
+    return s;
+  }
+  makeInvince(d){this.invince=true;this.invTimer=d;}
+  updateGirth(){
+    const g=1+Math.sqrt(this.len)*0.14;
+    this.r=this.baseR*Math.min(g,2.8);
+  }
+  update(dt){
+    if(!this.alive)return;
+    this.updateGirth();
+    if(this.invince){this.invTimer-=dt*1000;this.flashT+=dt*14;if(this.invTimer<=0){this.invince=false;this.flashT=0;}}
+    if(this.boosting)this.flashT+=dt*28;
+    // passive: still timer for ambush snakes
+    const moving=this.vel.mag()>0.5;
+    if(!moving)this.stillTimer+=dt;else this.stillTimer=0;
+    // feeding frenzy
+    if(this.feedingFrenzy){this.ffTimer-=dt;if(this.ffTimer<=0)this.feedingFrenzy=false;}
+    // null field
+    if(this.nullField){this.nullTimer-=dt;if(this.nullTimer<=0)this.nullField=false;}
+    // king cobra hood flare: maintain slow in range while pwrActive
+    if(this.sp.id==='king_cobra'&&this.pwrActive&&game){
+      this.pwrTimer-=dt;if(this.pwrTimer<=0)this.pwrActive=false;
+      game.allSnakes().filter(s=>s!==this&&s.alive&&!s.nulled()).forEach(s=>{
+        if(this.pos.dist(s.pos)<120)s.debuffs.slow=Math.max(s.debuffs.slow||0,0.4);
+      });
+    }
+    // tank mode
+    if(this.tankMode){this.tankTimer-=dt;if(this.tankTimer<=0)this.tankMode=false;}
+    // neurostrike window
+    if(this.neurostrike){this.neuroTimer-=dt;if(this.neuroTimer<=0)this.neurostrike=false;}
+    // strike coil window
+    if(this.strikeCoil){this.strikeTimer-=dt;if(this.strikeTimer<=0)this.strikeCoil=false;}
+    // fang lock
+    if(this.fangLock){this.fangTimer-=dt;if(this.fangTimer<=0)this.fangLock=false;}
+    // power cooldown
+    if(this.pwrCd>0)this.pwrCd=Math.max(0,this.pwrCd-dt*1000);
+    // boost drain
+    if(this.boosting){
+      this.boostLen+=dt*2.2;
+      if(this.boostLen>=1){this.targetLen=Math.max(3,this.targetLen-1);this.boostLen=0;}
+    }
+    // venom aura passive
+    if(this.sp.id==='king_cobra'&&game){
+      game.allSnakes().filter(s=>s!==this&&s.alive).forEach(s=>{
+        if(this.pos.dist(s.pos)<80&&!s.nulled()){s.debuffs.slow=Math.max(s.debuffs.slow||0,0.2);}
+      });
+    }
+    // black mamba passive
+    if(this.sp.id==='black_mamba'&&game){
+      game.allSnakes().filter(s=>s!==this&&s.alive).forEach(s=>{
+        if(this.pos.dist(s.pos)<70&&!s.nulled()){s.debuffs.slow=Math.max(s.debuffs.slow||0,0.1);}
+      });
+    }
+    const spd=this.getSpd();
+    const vn=this.vel.norm().mul(spd*dt);
+    this.pos=this.pos.add(vn);
+    // world boundary → die
+    if(this.pos.x<this.r||this.pos.x>CFG.WORLD-this.r||this.pos.y<this.r||this.pos.y>CFG.WORLD-this.r){
+      if(this.isPlayer&&this.invince){
+        this.pos.x=Math.max(this.r,Math.min(CFG.WORLD-this.r,this.pos.x));
+        this.pos.y=Math.max(this.r,Math.min(CFG.WORLD-this.r,this.pos.y));
+        this.vel=this.vel.mul(-1);
+      }else{
+        const dr=this.die(null);
+        if(game)setTimeout(()=>game.handleDeath(this,null,dr),0);
+        return;
+      }
+    }
+    // coral snake confusion — random velocity nudge
+    if(this.debuffs.confused&&!this.isPlayer){
+      if(Date.now()>this.debuffs.confusedEnd){this.debuffs.confused=false;}
+      else{this.vel=this.vel.add(new V((Math.random()-0.5)*0.4,(Math.random()-0.5)*0.4)).norm();}
+    }
+    // anaconda passive: circle-detection — orbit enemy 2s to apply -80% slow
+    if(this.sp.id==='anaconda'&&game){
+      let near=null,nd=Infinity;
+      game.allSnakes().filter(t=>t!==this&&t.alive).forEach(t=>{
+        const d=this.pos.dist(t.pos);if(d<200&&d<nd){nd=d;near=t;}
+      });
+      if(near&&nd<200){
+        const angleToTarget=Math.atan2(near.pos.y-this.pos.y,near.pos.x-this.pos.x);
+        if(this.conAngleLast!==null){
+          let da=angleToTarget-this.conAngleLast;
+          while(da>Math.PI)da-=Math.PI*2;while(da<-Math.PI)da+=Math.PI*2;
+          if(Math.abs(da)>0.04)this.conCircleTimer+=dt;
+          if(this.conCircleTimer>=2.0&&!near.nulled()){
+            near.debuffs.slow=Math.max(near.debuffs.slow||0,0.8);
+            near.debuffs.conEnd=Date.now()+2000;
+            this.conCircleTimer=0;
+          }
+        }
+        this.conAngleLast=angleToTarget;
+      }else{this.conCircleTimer=0;this.conAngleLast=null;}
+    }
+    this.tongueT=(this.tongueT||0)+0.08; // tongue flick cycle
+    if(this.vel.mag()>0.1)this.angle=Math.atan2(this.vel.y,this.vel.x);
+    this.segs[0]=this.pos.clone();
+    for(let i=1;i<this.segs.length;i++){
+      const prev=this.segs[i-1],curr=this.segs[i];
+      const dir=prev.sub(curr);const dist=dir.mag();
+      const tgt=this.r*1.28;
+      if(dist>tgt)this.segs[i]=prev.sub(dir.norm().mul(tgt));
+    }
+    while(this.segs.length<this.targetLen)this.segs.push(this.segs[this.segs.length-1].clone());
+    this.len=this.segs.length;
+    // clear debuff slow each frame (reapplied by passives)
+    if(!this.debuffs._auraApplied)this.debuffs.slow=0;
+  }
+  nulled(){return this.sp.id==='king_snake'||(game&&game.nullFieldAffects(this));}
+  grow(amt){
+    const mult=this.sp.id==='retic_python'?1.5:1;
+    this.targetLen+=Math.ceil(amt*mult);
+    this.score+=Math.ceil(amt*10*mult);
+  }
+  headHitsBody(other){
+    if(!this.alive||!other.alive||this.invince||this===other||this.tankMode)return false;
+    const head=this.segs[0];
+    // green mamba passive: hitbox shrinks 35% while boosting
+    const myR=this.sp.id==='green_mamba'&&this.boosting?this.r*0.65:this.r;
+    const burmeseBonus=this.sp.id==='burmese_python'&&!this.boosting&&this.stillTimer>=3?other.r*0.4:0;
+    const extraR=(this.sp.id==='gaboon_viper'?(this.fangLock?other.r*0.75:other.r*0.25):0)+burmeseBonus;
+    for(let i=1;i<other.segs.length;i++){
+      if(head.dist(other.segs[i])<myR+other.r-2+extraR)return true;
+    }
+    return false;
+  }
+  headHitsHead(other){
+    if(!this.alive||!other.alive||this===other)return false;
+    if(this.invince&&other.invince)return false;
+    const burmeseB=this.sp.id==='burmese_python'&&!this.boosting&&this.stillTimer>=3?other.r*0.4:0;
+    const extraR=((this.sp.id==='gaboon_viper'||other.sp.id==='gaboon_viper')?Math.max(this.r,other.r)*0.25:0)+burmeseB;
+    const myR2=this.sp.id==='green_mamba'&&this.boosting?this.r*0.65:this.r;
+    const otR2=other.sp.id==='green_mamba'&&other.boosting?other.r*0.65:other.r;
+    return this.segs[0].dist(other.segs[0])<myR2+otR2+extraR;
+  }
+  takeDmg(atk,attacker){
+    if(this.invince)return{died:false,dmg:0};
+    let dmg=atk;
+    if(this.tankMode)dmg=Math.max(1,Math.ceil(dmg/2));
+    if(attacker&&attacker.neurostrike)dmg=this.hp;
+    if(attacker&&attacker.strikeCoil)dmg*=2;
+    this.hp-=dmg;this.makeInvince(1400);
+    return{died:this.hp<=0,dmg};
+  }
+  dropScoreFood(){
+    const half=Math.floor(this.score/2);
+    if(half<10)return[];
+    const n=Math.min(Math.max(4,Math.floor(half/40)),30);
+    const perOrb=Math.ceil(half/n/10);
+    const spread=100;const drops=[];
+    for(let i=0;i<n;i++){
+      const ox=this.pos.x+(Math.random()-0.5)*spread;
+      const oy=this.pos.y+(Math.random()-0.5)*spread;
+      drops.push(new Food(Math.max(10,Math.min(CFG.WORLD-10,ox)),Math.max(10,Math.min(CFG.WORLD-10,oy)),'score',this.color,perOrb));
+    }
+    return drops;
+  }
+  die(killer){
+    this.deaths++;this.alive=false;
+    if(killer){
+      killer.kills++;killer.score+=200;
+      if(killer.sp.id==='boa'){killer.feedingFrenzy=true;killer.ffTimer=5;}
+      if(killer.sp.id==='cottonmouth'&&game){
+        for(let i=0;i<8;i++)game.foods.push(new Food(killer.spawnX+Math.random()*200-100,killer.spawnY+Math.random()*200-100,'death',killer.color));
+      }
+    }
+    const bodyDrops=this.segs.map(s=>new Food(s.x,s.y,'death',this.color));
+    const scoreDrops=this.dropScoreFood();
+    this.score=Math.floor(this.score/2);
+    return{bodyDrops,scoreDrops};
+  }
+  draw(ctx,cam){
+    if(!this.alive)return;
+    ctx.save();
+    let baseA=1;
+    if(this.invince)baseA=Math.floor(this.flashT)%2===0?1:0.38;
+    if(this.tankMode){ctx.shadowBlur=18;ctx.shadowColor=this.sp.pwrC;}
+    // draw body tail→head
+    for(let i=this.segs.length-1;i>=0;i--){
+      const seg=this.segs[i];
+      const sx=seg.x-cam.x,sy=seg.y-cam.y;
+      if(sx<-PAD||sx>ctx.canvas.width+PAD||sy<-PAD||sy>ctx.canvas.height+PAD)continue;
+      const sz=this.r*(1-(i/this.segs.length)*0.42);
+      const scV=this.scaleP[i%this.scaleP.length];
+      let segA=baseA;
+      if(this.boosting&&i<5){
+        if(this.sp.id==='green_mamba')segA=Math.max(0.25,baseA*0.45);
+        const strobe=(Math.sin(this.flashT*1.8)+1)/2;
+        segA=this.sp.id==='green_mamba'?segA:0.3+strobe*0.7;
+        if(i<3){ctx.shadowBlur=16;ctx.shadowColor=this.color;}
+      }
+      const sc=getSegColors(this.speciesId,i,this.segs.length,this.color);
+      if(i===0)continue; // head drawn separately by drawSnakeHead
+      const isHead=false;
+      ctx.globalAlpha=segA;
+      const drawR=sz;
+      ctx.beginPath();ctx.arc(sx,sy,drawR,0,Math.PI*2);ctx.fillStyle=sc.body;ctx.fill();
+      // scale texture — head gets bigger brighter inner
+      const innerR=isHead?drawR*0.72:drawR*0.68*scV;
+      ctx.beginPath();ctx.arc(sx,sy,innerR,0,Math.PI*2);ctx.fillStyle=isHead?sc.inner:sc.inner;ctx.fill();
+      // border — head gets stronger outline
+      ctx.beginPath();ctx.arc(sx,sy,drawR*0.86,0,Math.PI*2);ctx.strokeStyle=isHead?'rgba(255,255,255,0.35)':sc.border;ctx.lineWidth=isHead?1.8:1.2;ctx.stroke();
+      // dorsal shine highlight
+      ctx.beginPath();ctx.arc(sx-drawR*0.28,sy-drawR*0.28,drawR*0.24,0,Math.PI*2);ctx.fillStyle=sc.shine;ctx.fill();
+      ctx.shadowBlur=0;ctx.globalAlpha=1;
+    }
+    // head extras
+    const hd=this.segs[0];
+    const hx=hd.x-cam.x,hy=hd.y-cam.y;
+    // vacuum indicator for player
+    if(this.isPlayer&&baseA>0.5){
+      const vacR=this.r*3;
+      ctx.beginPath();ctx.arc(hx,hy,vacR,0,Math.PI*2);
+      ctx.strokeStyle='rgba(255,255,255,0.12)';ctx.lineWidth=1;
+      ctx.setLineDash([4,5]);ctx.stroke();ctx.setLineDash([]);
+    }
+    // HP bar above head
+    if(this.maxHp>1){
+      const bw=this.r*3.5,bh=4,bx=hx-bw/2,by=hy-this.r-22;
+      ctx.fillStyle='rgba(0,0,0,0.6)';ctx.fillRect(bx-1,by-1,bw+2,bh+2);
+      const ratio=this.hp/this.maxHp;
+      const hpColor=ratio>0.6?'#00ff88':ratio>0.3?'#ffcc00':'#ff3344';
+      ctx.fillStyle=hpColor;ctx.fillRect(bx,by,bw*ratio,bh);
+      ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1;ctx.strokeRect(bx,by,bw,bh);
+    }
+    // species-specific head render — 1.8x bigger than body
+    drawSnakeHead(ctx,this.speciesId,hx,hy,this.r*1.8,this.angle,this.color,baseA,this.tongueT||0);
+    // name + species above head
+    ctx.textAlign='center';
+    const nameY=hy-this.r*1.8-20;
+    const spTag=this.sp.name; // species name always shown
+    const nameColor=this.isPlayer?'#00ffff':baseA>0.5?'white':'rgba(255,255,255,0.45)';
+    const spColor=this.isPlayer?this.sp.clsC:baseA>0.5?'rgba(255,220,80,0.9)':'rgba(255,220,80,0.35)';
+
+    // species name (smaller, above player name)
+    ctx.font=`bold ${Math.max(6,Math.min(8,this.r*0.7))}px "Press Start 2P"`;
+    ctx.strokeStyle='rgba(0,0,0,0.9)';ctx.lineWidth=3;
+    ctx.strokeText(spTag,hx,nameY);
+    ctx.fillStyle=spColor;
+    ctx.fillText(spTag,hx,nameY);
+
+    // player/bot name (Lexend, slightly larger, below species tag)
+    const playerNameY=nameY+13;
+    ctx.font=`700 ${Math.max(9,Math.min(13,this.r*1.1))}px Lexend`;
+    ctx.strokeStyle='rgba(0,0,0,0.9)';ctx.lineWidth=3;
+    ctx.strokeText(this.name,hx,playerNameY);
+    ctx.fillStyle=nameColor;
+    ctx.fillText(this.name,hx,playerNameY);
+    ctx.restore();
+  }
+}
+
+
+// ─── POWER EFFECT ──────────────────────────────────────────────────────────────
+class PowerEffect{
+  constructor(type,x,y,color,owner){
+    this.type=type;this.pos=new V(x,y);this.color=color;this.owner=owner;
+    this.age=0;this.alive=true;this.r=0;this.particles=[];
+    // type-specific init
+    if(type==='shockwave'||type==='null'||type==='absorb'||type==='hood'){
+      this.maxR=type==='absorb'?CFG.VAC*3:type==='hood'?120:type==='null'?200:260;
+      this.dur=type==='absorb'?4:type==='hood'?3:1.2;
+    }else if(type==='phase'){
+      this.dur=2.5;
+      for(let i=0;i<28;i++)this.particles.push({
+        x:x+(Math.random()-0.5)*60,y:y+(Math.random()-0.5)*60,
+        vx:(Math.random()-0.5)*40,vy:(Math.random()-0.5)*40,life:Math.random()*2+0.5
+      });
+    }else if(type==='teleport'){
+      this.dur=0.7;
+      for(let i=0;i<20;i++)this.particles.push({
+        a:Math.random()*Math.PI*2,dist:Math.random()*50,
+        speed:80+Math.random()*80,life:0.6
+      });
+    }else if(type==='surge'){
+      this.dur=1.5;this.streaks=[];
+      for(let i=0;i<12;i++)this.streaks.push({a:owner.angle+(Math.random()-0.5)*0.5,len:40+Math.random()*60,life:1.5});
+    }else if(type==='coil'||type==='constrict'){
+      this.dur=type==='constrict'?3:1.5;this.spiralA=0;
+    }else if(type==='fang'){
+      this.dur=4;
+      for(let i=0;i<16;i++)this.particles.push({
+        a:Math.random()*Math.PI*2,r:10+Math.random()*40,
+        life:3+Math.random(),size:4+Math.random()*6
+      });
+    }else if(type==='tank'){
+      this.dur=5;this.hexR=0;
+    }else if(type==='neurostrike'){
+      this.dur=3;
+    }else if(type==='static'){
+      this.dur=5;this.noiseT=0;
+      for(let i=0;i<20;i++)this.particles.push({
+        x:x+(Math.random()-0.5)*200,y:y+(Math.random()-0.5)*200,
+        vx:(Math.random()-0.5)*30,vy:(Math.random()-0.5)*30,
+        hue:Math.random()*360,life:5
+      });
+    }
+  }
+  update(dt){
+    this.age+=dt;
+    if(this.age>=this.dur){this.alive=false;return;}
+    const s=this.owner;
+    if(s)this.pos=s.pos.clone();
+    this.particles.forEach(p=>{
+      if(p.vx!==undefined){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;}
+      else if(p.dist!==undefined){p.dist+=p.speed*dt;p.life-=dt;}
+      else{p.life-=dt;}
+    });
+    this.particles=this.particles.filter(p=>p.life>0);
+    if(this.type==='surge'&&this.streaks)this.streaks.forEach(st=>st.life-=dt);
+  }
+  draw(ctx,cam){
+    if(!this.alive)return;
+    const sx=this.pos.x-cam.x,sy=this.pos.y-cam.y;
+    const t=this.age/this.dur; // 0→1 progress
+    ctx.save();
+    if(this.type==='shockwave'){
+      const r=this.maxR*Math.pow(t,0.6);
+      const a=Math.max(0,(1-t)*0.85);
+      ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);
+      ctx.strokeStyle=this.color;ctx.lineWidth=4*(1-t)+1;ctx.globalAlpha=a;
+      ctx.shadowBlur=18;ctx.shadowColor=this.color;ctx.stroke();
+      if(t<0.5){ctx.beginPath();ctx.arc(sx,sy,r*0.6,0,Math.PI*2);ctx.lineWidth=2;ctx.globalAlpha=a*0.4;ctx.stroke();}
+    }else if(this.type==='null'){
+      const r=this.maxR*Math.min(t*2,1);
+      ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);
+      ctx.strokeStyle='#ffffff';ctx.lineWidth=3;ctx.globalAlpha=(1-t)*0.6;
+      ctx.setLineDash([10,8]);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle='rgba(255,255,255,0.04)';ctx.globalAlpha=1;ctx.fill();
+    }else if(this.type==='absorb'){
+      for(let ring=0;ring<3;ring++){
+        const rr=(this.maxR*((t+ring*0.33)%1));
+        ctx.beginPath();ctx.arc(sx,sy,rr,0,Math.PI*2);
+        ctx.strokeStyle=this.color;ctx.lineWidth=2.5;
+        ctx.globalAlpha=Math.max(0,0.5*(1-((t+ring*0.33)%1)));
+        ctx.shadowBlur=10;ctx.shadowColor=this.color;ctx.stroke();
+      }
+    }else if(this.type==='hood'){
+      const r=this.maxR*Math.min(t*1.6,1);
+      ctx.beginPath();ctx.arc(sx,sy,r,-Math.PI*0.8,Math.PI*0.8);
+      ctx.strokeStyle=this.color;ctx.lineWidth=5*(1-t)+2;
+      ctx.globalAlpha=(1-t)*0.7;ctx.shadowBlur=14;ctx.shadowColor=this.color;ctx.stroke();
+      ctx.beginPath();ctx.arc(sx,sy,r*0.5,-Math.PI*0.6,Math.PI*0.6);
+      ctx.lineWidth=3;ctx.globalAlpha=(1-t)*0.4;ctx.stroke();
+    }else if(this.type==='phase'){
+      this.particles.forEach(p=>{
+        const a=Math.max(0,p.life/3)*0.7;
+        ctx.globalAlpha=a;ctx.fillStyle=this.color;
+        ctx.shadowBlur=10;ctx.shadowColor=this.color;
+        ctx.beginPath();ctx.arc(p.x-cam.x,p.y-cam.y,3+a*4,0,Math.PI*2);ctx.fill();
+      });
+    }else if(this.type==='teleport'){
+      this.particles.forEach(p=>{
+        const px=sx+Math.cos(p.a)*p.dist,py=sy+Math.sin(p.a)*p.dist;
+        ctx.globalAlpha=Math.max(0,p.life/0.6)*0.9;
+        ctx.fillStyle=this.color;ctx.shadowBlur=14;ctx.shadowColor=this.color;
+        ctx.beginPath();ctx.arc(px,py,4,0,Math.PI*2);ctx.fill();
+      });
+      ctx.globalAlpha=(1-t)*0.8;ctx.fillStyle=this.color;
+      ctx.shadowBlur=30;ctx.shadowColor=this.color;
+      ctx.beginPath();ctx.arc(sx,sy,18*(1-t)+4,0,Math.PI*2);ctx.fill();
+    }else if(this.type==='surge'&&this.streaks){
+      this.streaks.forEach(st=>{
+        if(st.life<=0)return;
+        const a=Math.max(0,st.life/1.5)*0.8;
+        ctx.globalAlpha=a;ctx.strokeStyle=this.color;
+        ctx.lineWidth=3*(st.life/1.5);ctx.shadowBlur=10;ctx.shadowColor=this.color;
+        ctx.beginPath();
+        ctx.moveTo(sx,sy);
+        ctx.lineTo(sx-Math.cos(st.a)*st.len,sy-Math.sin(st.a)*st.len);
+        ctx.stroke();
+      });
+    }else if(this.type==='coil'||this.type==='constrict'){
+      const rings=this.type==='constrict'?6:4;
+      const baseR=this.type==='constrict'?80*(1-t*0.5):50;
+      for(let i=0;i<rings;i++){
+        const angle=this.age*3+(i/rings)*Math.PI*2;
+        const r=baseR*(1-i*0.12);
+        const startA=angle;const endA=angle+Math.PI*1.4;
+        ctx.beginPath();ctx.arc(sx,sy,r,startA,endA);
+        ctx.strokeStyle=this.color;ctx.lineWidth=4-i*0.5;
+        ctx.globalAlpha=(1-t)*0.7;ctx.shadowBlur=12;ctx.shadowColor=this.color;ctx.stroke();
+      }
+    }else if(this.type==='fang'){
+      this.particles.forEach(p=>{
+        const a=Math.max(0,p.life/(3+1))*0.8;
+        ctx.globalAlpha=a;ctx.fillStyle='rgba(150,80,220,0.6)';
+        const px=sx+Math.cos(p.a)*p.r,py=sy+Math.sin(p.a)*p.r;
+        ctx.beginPath();
+        ctx.moveTo(px,py-p.size);ctx.lineTo(px+p.size*0.5,py+p.size*0.5);ctx.lineTo(px-p.size*0.5,py+p.size*0.5);
+        ctx.closePath();ctx.fill();
+        ctx.strokeStyle='#aa44ff';ctx.lineWidth=1;ctx.stroke();
+      });
+      if(this.owner&&this.owner.fangLock){
+        ctx.globalAlpha=0.35*(1-t);ctx.strokeStyle='#aa44ff';ctx.lineWidth=2;
+        ctx.setLineDash([5,5]);ctx.beginPath();ctx.arc(sx,sy,this.owner.r+8,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+      }
+    }else if(this.type==='tank'){
+      const a=(1-t)*0.45;
+      for(let i=0;i<6;i++){
+        const ha=i*(Math.PI/3)+this.age*0.4;const hr=this.owner?this.owner.r*2.5:30;
+        const hx=sx+Math.cos(ha)*hr,hy=sy+Math.sin(ha)*hr;
+        ctx.globalAlpha=a;ctx.strokeStyle=this.color;ctx.lineWidth=3;
+        ctx.shadowBlur=12;ctx.shadowColor=this.color;
+        ctx.beginPath();
+        for(let j=0;j<7;j++){const a2=ha+j*(Math.PI/3);const r2=hr*(j%2===0?1:0.55);ctx.lineTo(sx+Math.cos(a2)*r2,sy+Math.sin(a2)*r2);}
+        ctx.closePath();ctx.stroke();
+      }
+    }else if(this.type==='neurostrike'){
+      if(this.owner&&this.owner.neurostrike){
+        const pulse=(Math.sin(this.age*12)+1)/2;
+        ctx.globalAlpha=0.6*pulse;ctx.fillStyle=this.color;
+        ctx.shadowBlur=20;ctx.shadowColor=this.color;
+        ctx.beginPath();ctx.arc(sx,sy,this.owner.r+10+pulse*6,0,Math.PI*2);ctx.fill();
+      }
+    }else if(this.type==='static'){
+      this.particles.forEach(p=>{
+        const a=Math.max(0,p.life/5)*0.7;
+        ctx.globalAlpha=a;ctx.fillStyle=`hsl(${p.hue},100%,65%)`;
+        ctx.fillRect(p.x-cam.x-2,p.y-cam.y-2,4+Math.random()*4,4+Math.random()*4);
+      });
+    }
+    ctx.restore();
+  }
+}
+
+// ─── BOT AI ────────────────────────────────────────────────────────────────
+class BotAI{
+  constructor(snake){
+    this.s=snake;
+    this.thinkT=0;
+    this.goal=null;        // {type:'food'|'attack'|'wander'|'flee'|'orbit', target, pos}
+    this.goalAge=0;        // how long current goal has been held
+    this.wanderA=Math.random()*Math.PI*2;
+    this.wanderT=0;        // timer to update wander direction
+    this.orbitDir=Math.random()>0.5?1:-1; // constrictor orbit direction
+    this.stuckT=0;         // detect stuck oscillation
+    this.lastPos=null;
+    this.stuckCount=0;
+  }
+  think(dt,foods,snakes){
+    const s=this.s;
+    const diff=DIFF[currentDiff];
+
+    // ── STUCK DETECTION ──────────────────────────────────────────
+    if(!this.lastPos)this.lastPos=s.pos.clone();
+    const moved=s.pos.dist(this.lastPos);
+    if(moved<2){this.stuckT+=dt;}else{this.stuckT=0;this.stuckCount=0;}
+    this.lastPos=s.pos.clone();
+    if(this.stuckT>0.8){
+      // force new wander direction to break oscillation
+      this.stuckCount++;
+      this.wanderA=Math.random()*Math.PI*2;
+      this.stuckT=0;
+      this.goal=null;
+    }
+
+    // ── THINK RATE based on difficulty ───────────────────────────
+    this.thinkT-=dt;
+    if(this.thinkT>0){
+      // Between thinks: smooth steering toward current goal vel
+      if(this.goal&&this.goal.vel){
+        s.vel=s.vel.norm().add(this.goal.vel.mul(0.15)).norm();
+      }
+      return;
+    }
+    this.thinkT=diff.reactionT*(0.7+Math.random()*0.6);
+    this.goalAge+=this.thinkT;
+
+    const btype=s.sp.bot;
+    const myLen=s.len;
+
+    // ── FIND THREATS & TARGETS ────────────────────────────────────
+    let nearestThreat=null,threatD=Infinity;
+    let attackTarget=null,attackD=Infinity;
+    const aggRange=300*diff.aggScale;
+    const fleeRange=btype==='evasive'?160:btype==='glass_cannon'?120:90;
+
+    snakes.forEach(o=>{
+      if(o===s||!o.alive)return;
+      const d=s.pos.dist(o.pos);
+      // threat: stronger or invincible snakes nearby
+      const dangerous=(o.len>myLen*0.8||o.atk>=2)&&d<fleeRange;
+      if(dangerous&&d<threatD){threatD=d;nearestThreat=o;}
+      // attack: weaker or similarly sized, not invincible
+      if(!o.invince&&d<aggRange&&d<attackD){attackD=d;attackTarget=o;}
+    });
+
+    // ── FIND NEAREST FOOD (prefer death/score orbs) ───────────────
+    let bestFood=null,bestFoodScore=Infinity;
+    const foodScanR=500; // only scan nearby food
+    foods.forEach(f=>{
+      if(!f.alive)return;
+      const d=s.pos.dist(f.pos);
+      if(d>foodScanR)return;
+      // weight: distance penalized, type bonus
+      const typeMult=f.type==='death'?0.4:f.type==='score'?0.5:1;
+      const score=d*typeMult;
+      if(score<bestFoodScore){bestFoodScore=score;bestFood=f;}
+    });
+
+    // ── BOUNDARY PUSH (smooth arc away from wall) ─────────────────
+    const margin=300;
+    const wx=s.pos.x,wy=s.pos.y;
+    let wallPush=new V(0,0);
+    if(wx<margin)wallPush=wallPush.add(new V((margin-wx)/margin,0));
+    if(wx>CFG.WORLD-margin)wallPush=wallPush.add(new V(-(wx-(CFG.WORLD-margin))/margin,0));
+    if(wy<margin)wallPush=wallPush.add(new V(0,(margin-wy)/margin));
+    if(wy>CFG.WORLD-margin)wallPush=wallPush.add(new V(0,-(wy-(CFG.WORLD-margin))/margin));
+    const wallForce=wallPush.mag();
+
+    // ── GOAL DECISION ─────────────────────────────────────────────
+    let newVel=s.vel.clone();
+    let newBoost=false;
+
+    if(wallForce>0.3){
+      // Priority 0: escape wall
+      newVel=s.vel.norm().add(wallPush.norm().mul(2)).norm();
+      newBoost=wallForce>0.7;
+
+    }else if(nearestThreat&&threatD<fleeRange){
+      // Priority 1: flee threat
+      const fleeDir=s.pos.sub(nearestThreat.pos).norm();
+      // Add perpendicular to not just run straight back
+      const perp=new V(-fleeDir.y,fleeDir.x).mul(0.4);
+      newVel=fleeDir.add(perp).norm();
+      newBoost=threatD<60;
+      // Use defensive power on flee
+      if(s.pwrCd===0&&threatD<100){s.usePower(snakes,foods);}
+
+    }else if(btype==='ambush'){
+      // Ambush: creep toward target, then freeze and strike
+      if(attackTarget&&attackD<250*diff.aggScale){
+        if(attackD>70){
+          newVel=attackTarget.pos.sub(s.pos).norm();
+          newBoost=false; // slow creep
+        }else{
+          // HOLD POSITION — but prevent exact zero by using tiny oscillation
+          const jitter=new V(Math.cos(this.goalAge*8)*0.15,Math.sin(this.goalAge*7)*0.15);
+          newVel=s.vel.norm().add(jitter).norm(); // micro-move prevents stuck
+          if(s.pwrCd===0)s.usePower(snakes,foods);
+        }
+      }else if(bestFood){
+        newVel=bestFood.pos.sub(s.pos).norm();
+      }else{
+        this._wander(dt);newVel=new V(Math.cos(this.wanderA),Math.sin(this.wanderA));
+      }
+
+    }else if(btype==='constrictor'){
+      if(attackTarget&&attackD<320*diff.aggScale){
+        // Orbit the target in tightening circles
+        const toTarget=attackTarget.pos.sub(s.pos);
+        const dist=toTarget.mag();
+        const toDir=toTarget.norm();
+        const perp=new V(-toDir.y,toDir.x).mul(this.orbitDir);
+        if(dist>150){
+          newVel=toDir.add(perp.mul(0.5)).norm();// approach + spiral
+        }else{
+          newVel=perp.add(toDir.mul(0.3)).norm();// tight orbit
+          if(s.pwrCd===0&&dist<180)s.usePower(snakes,foods);
+        }
+        newBoost=dist>200;
+      }else if(bestFood){
+        newVel=bestFood.pos.sub(s.pos).norm();
+      }else{this._wander(dt);newVel=new V(Math.cos(this.wanderA),Math.sin(this.wanderA));}
+
+    }else if(btype==='aggressive'){
+      // Always prefer attack, food only as fallback
+      if(attackTarget&&attackD<aggRange){
+        // Lead target position for intercept
+        const tvel=attackTarget.vel.norm().mul(attackD*0.4);
+        const intercept=attackTarget.pos.add(tvel);
+        newVel=intercept.sub(s.pos).norm();
+        newBoost=attackD<200;
+        if(s.pwrCd===0&&attackD<180)s.usePower(snakes,foods);
+      }else if(bestFood){
+        newVel=bestFood.pos.sub(s.pos).norm();
+        newBoost=bestFoodScore>300;
+      }else{this._wander(dt);newVel=new V(Math.cos(this.wanderA),Math.sin(this.wanderA));}
+
+    }else if(btype==='collector'){
+      // Pure food focus, avoid fights
+      if(bestFood){
+        newVel=bestFood.pos.sub(s.pos).norm();
+        newBoost=bestFoodScore>400;
+        if(s.pwrCd===0&&bestFoodScore<200)s.usePower(snakes,foods);
+      }else{this._wander(dt);newVel=new V(Math.cos(this.wanderA),Math.sin(this.wanderA));}
+
+    }else if(btype==='territorial'){
+      // Defend spawn zone + patrol, opportunistic attacks
+      const homeDist=s.pos.dist(new V(s.spawnX,s.spawnY));
+      if(attackTarget&&attackD<200*diff.aggScale){
+        newVel=attackTarget.pos.sub(s.pos).norm();
+        newBoost=attackD<120;
+        if(s.pwrCd===0&&attackD<100)s.usePower(snakes,foods);
+      }else if(bestFood&&bestFoodScore<250){
+        newVel=bestFood.pos.sub(s.pos).norm();
+      }else if(homeDist>600){
+        // drift back toward home
+        newVel=new V(s.spawnX-s.pos.x,s.spawnY-s.pos.y).norm();
+      }else{this._wander(dt);newVel=new V(Math.cos(this.wanderA),Math.sin(this.wanderA));}
+
+    }else if(btype==='ranged'){
+      // keep medium distance, fire projectile
+      if(attackTarget){
+        const ideal=200;
+        if(attackD>ideal+60){newVel=attackTarget.pos.sub(s.pos).norm();newBoost=attackD>350;}
+        else if(attackD<ideal-60){newVel=s.pos.sub(attackTarget.pos).norm();}
+        else{
+          // strafe perpendicular
+          const perp=new V(-s.vel.y,s.vel.x);newVel=perp.norm();
+        }
+        if(s.pwrCd===0&&Math.abs(attackD-ideal)<100)s.usePower(snakes,foods);
+      }else if(bestFood){newVel=bestFood.pos.sub(s.pos).norm();}
+      else{this._wander(dt);newVel=new V(Math.cos(this.wanderA),Math.sin(this.wanderA));}
+
+    }else if(btype==='evasive'){
+      // Food first, avoid everything
+      if(bestFood){
+        newVel=bestFood.pos.sub(s.pos).norm();
+        newBoost=bestFoodScore>300;
+      }else{this._wander(dt);newVel=new V(Math.cos(this.wanderA),Math.sin(this.wanderA));}
+      if(s.pwrCd===0&&nearestThreat&&threatD<200)s.usePower(snakes,foods);
+
+    }else{
+      // balanced fallback
+      const doAtk=attackTarget&&attackD<aggRange&&Math.random()<diff.aggScale;
+      if(doAtk){
+        newVel=attackTarget.pos.sub(s.pos).norm();newBoost=attackD<150;
+      }else if(bestFood){
+        newVel=bestFood.pos.sub(s.pos).norm();
+      }else{this._wander(dt);newVel=new V(Math.cos(this.wanderA),Math.sin(this.wanderA));}
+    }
+
+    // ── APPLY with smooth steering ────────────────────────────────
+    // Blend toward desired direction (not instant snap = more natural movement)
+    const steerStr=btype==='ambush'?0.35:s.sp.id==='sidewinder'?0.65:0.45;
+    s.vel=s.vel.norm().add(newVel.mul(steerStr)).norm();
+    s.boosting=newBoost;
+
+    // Store goal vel for between-think interpolation
+    this.goal={vel:newVel};
+
+    // Bot venom trail
+    if(s.boosting&&s.sp.id==='spitting_cobra'){
+      if(!s._trailT||s._trailT<=0){
+        if(game)game.slowZones.push(new SlowZone(s.pos.x,s.pos.y,3,s.sp.pwrC,s));
+        s._trailT=0.2;
+      }else s._trailT-=dt;
+    }
+  }
+  _wander(dt){
+    this.wanderT-=dt;
+    if(this.wanderT<=0){
+      this.wanderT=1.5+Math.random()*2;
+      // 25% chance: wander toward a random hot zone instead of random direction
+      if(Math.random()<0.25&&CFG.PADS){
+        const pad=CFG.PADS[Math.floor(Math.random()*CFG.PADS.length)];
+        const dx=pad[0]-this.s.pos.x, dy=pad[1]-this.s.pos.y;
+        this.wanderA=Math.atan2(dy,dx);
+      }else{
+        this.wanderA+=( Math.random()-0.5)*Math.PI*0.8;
+      }
+    }
+  }
+}
+
+// power use from snake itself
+Snake.prototype.usePower=function(snakes,foods){
+  if(this.pwrCd>0)return;
+  const id=this.sp.id;
+  this.pwrCd=CFG.PWR_CD;
+  if(id==='black_mamba'){this.neurostrike=true;this.neuroTimer=this.sp.pwrDur/1000;if(game)game.powerEffects.push(new PowerEffect('neurostrike',this.pos.x,this.pos.y,this.sp.pwrC,this));}
+  else if(id==='sidewinder'){this.invince=true;this.invTimer=this.sp.pwrDur;if(game)game.powerEffects.push(new PowerEffect('phase',this.pos.x,this.pos.y,this.sp.pwrC,this));}
+  else if(id==='green_mamba'){
+    if(snakes){const dir=this.vel.norm();const oldPos=this.pos.clone();if(game)game.powerEffects.push(new PowerEffect('teleport',oldPos.x,oldPos.y,this.sp.pwrC,null));this.pos=this.pos.add(dir.mul(220));this.segs[0]=this.pos.clone();if(game)game.powerEffects.push(new PowerEffect('teleport',this.pos.x,this.pos.y,this.sp.pwrC,null));}
+  }
+  else if(id==='king_cobra'){
+    this.pwrActive=true;this.pwrTimer=this.sp.pwrDur/1000;
+    // HOOD FLARE: apply -40% slow to all in 120px for 3s
+    if(game){
+      game.allSnakes().filter(s=>s!==this&&s.alive&&!s.nulled()).forEach(s=>{
+        if(this.pos.dist(s.pos)<120){s.debuffs.slow=Math.max(s.debuffs.slow||0,0.4);s.debuffs.hoodEnd=Date.now()+3000;}
+      });
+      game.powerEffects.push(new PowerEffect('hood',this.pos.x,this.pos.y,this.sp.pwrC,this));
+    }
+  }
+  else if(id==='rattlesnake'){
+    if(snakes)snakes.filter(s=>s!==this&&s.alive).forEach(s=>{
+      if(this.pos.dist(s.pos)<260&&!s.nulled()){s.debuffs.stunEnd=Date.now()+this.sp.pwrDur;s.debuffs.slow=0.15;}
+    });if(game)game.powerEffects.push(new PowerEffect('shockwave',this.pos.x,this.pos.y,this.sp.pwrC,this));
+  }
+  else if(id==='spitting_cobra'){
+    if(game)game.projs.push(new Proj(this.pos.x,this.pos.y,this.angle,this.sp.pwrC,this));
+  }
+  else if(id==='king_snake'){
+    this.nullField=true;this.nullTimer=this.sp.pwrDur/1000;
+    // balance: also get +25% speed for duration (offense not just defense)
+    this.spdMult=this.sp.spd*1.25;
+    setTimeout(()=>{this.spdMult=this.sp.spd;},this.sp.pwrDur);
+    if(game)game.powerEffects.push(new PowerEffect('null',this.pos.x,this.pos.y,this.sp.pwrC,this));
+  }
+  else if(id==='copperhead'){this.strikeCoil=true;this.strikeTimer=this.sp.pwrDur/1000;if(game)game.powerEffects.push(new PowerEffect('coil',this.pos.x,this.pos.y,this.sp.pwrC,this));}
+  else if(id==='boa'){
+    this.pwrActive=true;this.pwrTimer=this.sp.pwrDur/1000;
+    // SQUEEZE: stun nearest enemy within 120px
+    if(game){
+      let near=null,nd=Infinity;
+      game.allSnakes().filter(s=>s!==this&&s.alive&&!s.nulled()).forEach(s=>{
+        const d=this.pos.dist(s.pos);if(d<120&&d<nd){nd=d;near=s;}
+      });
+      if(near){near.debuffs.stunEnd=Date.now()+this.sp.pwrDur;}
+      game.powerEffects.push(new PowerEffect('coil',this.pos.x,this.pos.y,this.sp.pwrC,this));
+    }
+  }
+  else if(id==='cottonmouth'){this.spdMult=this.sp.spd*4;setTimeout(()=>{this.spdMult=this.sp.spd;},this.sp.pwrDur);if(game)game.powerEffects.push(new PowerEffect('surge',this.pos.x,this.pos.y,this.sp.pwrC,this));}
+  else if(id==='gaboon_viper'){
+    this.fangLock=true;this.fangTimer=this.sp.pwrDur/1000;
+    // Freeze nearest ENEMY for 1s (not self)
+    if(game){
+      let near=null,nd=Infinity;
+      game.allSnakes().filter(s=>s!==this&&s.alive&&!s.nulled()).forEach(s=>{
+        const d=this.pos.dist(s.pos);if(d<200&&d<nd){nd=d;near=s;}
+      });
+      if(near){near.debuffs.stunEnd=Date.now()+1200;} // stun enemy
+      game.powerEffects.push(new PowerEffect('fang',this.pos.x,this.pos.y,this.sp.pwrC,this));
+    }
+  }
+  else if(id==='retic_python'){this.pwrActive=true;this.pwrTimer=this.sp.pwrDur/1000;if(game)game.powerEffects.push(new PowerEffect('absorb',this.pos.x,this.pos.y,this.sp.pwrC,this));}
+  else if(id==='anaconda'){
+    if(snakes){
+      let nearest=null;let nd=Infinity;
+      snakes.filter(s=>s!==this&&s.alive).forEach(s=>{const d=this.pos.dist(s.pos);if(d<180&&d<nd){nd=d;nearest=s;}});
+      if(nearest&&!nearest.nulled()){nearest.debuffs.slow=0.8;nearest.debuffs.constrict=Date.now()+this.sp.pwrDur;if(game)game.powerEffects.push(new PowerEffect('constrict',nearest.pos.x,nearest.pos.y,this.sp.pwrC,nearest));}
+      setTimeout(()=>{if(nearest)nearest.debuffs.slow=0;},this.sp.pwrDur);
+    }
+  }
+  else if(id==='burmese_python'){this.tankMode=true;this.tankTimer=this.sp.pwrDur/1000;if(game)game.powerEffects.push(new PowerEffect('tank',this.pos.x,this.pos.y,this.sp.pwrC,this));}
+  else if(id==='coral_snake'){
+    // FALSE SIGNAL: nearby enemies get confused — random velocity jitter for 5s
+    if(game){
+      const confuseRange=220;
+      game.allSnakes().filter(s=>s!==this&&s.alive&&!s.nulled()).forEach(s=>{
+        if(this.pos.dist(s.pos)<confuseRange){
+          s.debuffs.confused=true;
+          s.debuffs.confusedEnd=Date.now()+5000;
+          // also mild slow
+          s.debuffs.slow=Math.max(s.debuffs.slow||0,0.15);
+        }
+      });
+      game.powerEffects.push(new PowerEffect('static',this.pos.x,this.pos.y,this.sp.pwrC,this));
+    }
+    /* visual only */this.pwrActive=true;this.pwrTimer=this.sp.pwrDur/1000;}
+};
+
+// ─── JOYSTICK ──────────────────────────────────────────────────────────────
+class Joystick{
+  constructor(){
+    this.zone=document.getElementById('jzone');
+    this.handle=document.getElementById('jhandle');
+    this.active=false;
+    this.tid=null; // owns this touch identifier
+    this.origin=new V(0,0);this.current=new V(0,0);
+    this.maxD=52;this.angle=0;this.mag=0;
+    this.setup();
+  }
+  setup(){
+    const gs=document.getElementById('gameScreen');
+    // returns true if the element is a UI button we should not steal
+    const isUI=el=>el&&(el.id==='boostBtn'||el.id==='powerCanvas'||!!el.closest('#boostBtn')||!!el.closest('.pwr-wrap'));
+    // TOUCH START — grab first unclaimed touch that isn't on a button
+    gs.addEventListener('touchstart',e=>{
+      for(let i=0;i<e.changedTouches.length;i++){
+        const t=e.changedTouches[i];
+        if(isUI(document.elementFromPoint(t.clientX,t.clientY)))continue;
+        if(this.active)continue; // already tracking a finger
+        e.preventDefault();
+        this.tid=t.identifier;this.active=true;
+        this.handle.classList.add('on');
+        this.zone.style.left=(t.clientX-70)+'px';
+        this.zone.style.top=(t.clientY-70)+'px';
+        this.zone.style.display='block';
+        this.zone.classList.add('active');
+        this.origin=new V(t.clientX,t.clientY);
+        this.current=new V(t.clientX,t.clientY);
+        this.upd();break;
+      }
+    },{passive:false});
+    // TOUCH MOVE — only follow our claimed finger
+    document.addEventListener('touchmove',e=>{
+      if(!this.active)return;
+      for(let i=0;i<e.changedTouches.length;i++){
+        const t=e.changedTouches[i];
+        if(t.identifier!==this.tid)continue;
+        e.preventDefault();
+        this.current=new V(t.clientX,t.clientY);
+        this.upd();break;
+      }
+    },{passive:false});
+    // TOUCH END — release only if it's our finger
+    const onEnd=e=>{
+      if(!this.active)return;
+      for(let i=0;i<e.changedTouches.length;i++){
+        if(e.changedTouches[i].identifier!==this.tid)continue;
+        this.active=false;this.tid=null;
+        this.handle.classList.remove('on');
+        this.handle.style.transform='translate(-50%,-50%)';
+        this.mag=0;
+        this.zone.classList.remove('active');
+        this.zone.style.display='none';
+        break;
+      }
+    };
+    document.addEventListener('touchend',onEnd);
+    document.addEventListener('touchcancel',onEnd);
+    // Mouse fallback
+    gs.addEventListener('mousedown',e=>{
+      if(isUI(e.target))return;
+      e.preventDefault();
+      this.active=true;this.tid='mouse';
+      this.handle.classList.add('on');
+      this.zone.style.left=(e.clientX-70)+'px';this.zone.style.top=(e.clientY-70)+'px';
+      this.zone.style.display='block';this.zone.classList.add('active');
+      this.origin=new V(e.clientX,e.clientY);this.current=new V(e.clientX,e.clientY);this.upd();
+    });
+    document.addEventListener('mousemove',e=>{
+      if(!this.active||this.tid!=='mouse')return;
+      this.current=new V(e.clientX,e.clientY);this.upd();
+    });
+    document.addEventListener('mouseup',()=>{
+      if(this.tid!=='mouse')return;
+      this.active=false;this.tid=null;
+      this.handle.classList.remove('on');this.handle.style.transform='translate(-50%,-50%)';
+      this.mag=0;this.zone.classList.remove('active');this.zone.style.display='none';
+    });
+  }
+  upd(){
+    const d=this.current.sub(this.origin);const dist=d.mag();
+    if(dist>0){
+      this.angle=Math.atan2(d.y,d.x);
+      this.mag=Math.min(dist,this.maxD)/this.maxD;
+      const cl=d.norm().mul(Math.min(dist,this.maxD));
+      this.handle.style.transform=`translate(calc(-50% + ${cl.x}px),calc(-50% + ${cl.y}px))`;
+    }
+  }
+}
+
+// ─── GAME ──────────────────────────────────────────────────────────────────
+class Game{
+  constructor(){
+    this.canvas=document.getElementById('gameCanvas');
+    this.ctx=this.canvas.getContext('2d');
+    this.resize();
+    this.joystick=new Joystick();
+    this.cam=new V(0,0);
+    this.player=null;
+    this.bots=[];
+    this.foods=[];
+    this.slowZones=[];
+    this.projs=[];
+    this.dmgNums=[];
+    this.killFeedEntries=[];
+    this.powerEffects=[];
+    this.gameOver=false;
+    this.lastTime=0;
+    this.mouseAngle=0;
+    this.boost=false;this.keyBoost=false;
+    this.keys={};
+    this.playerLives=CFG.PLAYER_LIVES;
+    this.respawning=false;
+    this.nextLifeScore=CFG.LIFE_BASE_SCORE; // 10k, 20k, 40k...
+    this.livesEarned=0;
+    this.paused=false;
+    this.replenishT=0;
+    const _lz=localStorage.getItem('snakeZoom');
+    const savedZ=_lz!==null?parseFloat(_lz):0.5; // default 0.5 = wide view
+    this.zoom=isNaN(savedZ)?0.5:Math.max(0.35,Math.min(2.5,savedZ));
+    this.zoomLocked=!!localStorage.getItem('snakeZoomLock');
+    this.pinchDist0=null;
+    this.zoom0=this.zoom;
+    this.init();
+    this.bindInput();
+    this.bindZoomPause();
+  }
+  resize(){
+    this.canvas.width=window.innerWidth;
+    this.canvas.height=window.innerHeight;
+    // Apply layout class for JS-driven orientation (more reliable than CSS media query on mobile)
+    const gui=document.querySelector('.gui');
+    if(gui){
+      const isLandscape=window.innerWidth>window.innerHeight;
+      const isShort=window.innerHeight<500;
+      gui.classList.toggle('layout-landscape',isLandscape&&isShort);
+      gui.classList.toggle('layout-portrait',!isLandscape||!isShort);
+    }
+  }
+  init(){
+    const sp=SPECIES.find(s=>s.id===selId)||SPECIES[0];
+    const px=CFG.WORLD/2,py=CFG.WORLD/2;
+    this.player=new Snake(px,py,(gs.playerName&&gs.playerName.trim())?gs.playerName.trim():'YOU',true,selId,sColors[selId]);
+    // spawn bots
+    const diff=DIFF[currentDiff];
+    document.getElementById('diffHud').textContent=diff.label;
+    document.getElementById('diffHud').style.color=diff.color;
+    const usedSpecies=[selId];
+    for(let i=0;i<diff.botCount;i++){
+      const available=SPECIES.filter(s=>!usedSpecies.includes(s.id));
+      const bsp=available.length?available[Math.floor(Math.random()*available.length)]:SPECIES[Math.floor(Math.random()*SPECIES.length)];
+      if(available.length)usedSpecies.push(bsp.id);
+      const bx=Math.random()*(CFG.WORLD-600)+300,by=Math.random()*(CFG.WORLD-600)+300;
+      const b=new Snake(bx,by,CFG.NAMES[i%CFG.NAMES.length],false,bsp.id,sColors[bsp.id]||bsp.defCol);
+      b.spdMult=bsp.spd*diff.spdScale;b.bstMult=bsp.bst*(0.8+diff.spdScale*0.2);
+      b.ai=new BotAI(b);
+      this.bots.push(b);
+    }
+    // spawn food
+    for(let i=0;i<CFG.FOOD_AMB;i++){
+      this.foods.push(new Food(Math.random()*CFG.WORLD,Math.random()*CFG.WORLD,'amb'));
+    }
+    document.getElementById('gameBest').textContent=gs.best.toLocaleString();
+    this.updateLivesHUD();
+  }
+  allSnakes(){return[this.player,...this.bots];}
+  anyKingCobraOrMambaAura(target){
+    return this.allSnakes().filter(s=>s!==target&&s.alive&&(s.sp.id==='king_cobra'||s.sp.id==='black_mamba')).some(s=>s.pos.dist(target.pos)<80);
+  }
+  nullFieldAffects(target){
+    return this.allSnakes().filter(s=>s!==target&&s.alive&&s.nullField).some(s=>s.pos.dist(target.pos)<210);
+  }
+  bindInput(){
+    const cvs=this.canvas;
+    cvs.addEventListener('mousemove',e=>{
+      const r=cvs.getBoundingClientRect();
+      const cx=r.left+r.width/2,cy=r.top+r.height/2;
+      this.mouseAngle=Math.atan2(e.clientY-cy,e.clientX-cx);
+    });
+    cvs.addEventListener('mousedown',e=>{if(e.button===0)this.boost=true;});
+    cvs.addEventListener('mouseup',e=>{if(e.button===0)this.boost=false;});
+    document.addEventListener('keydown',e=>{this.keys[e.key]=true;if(e.key===' '||e.key==='ArrowUp'){e.preventDefault();this.keyBoost=true;}});
+    document.addEventListener('keyup',e=>{this.keys[e.key]=false;if(e.key===' '||e.key==='ArrowUp')this.keyBoost=false;});
+    const bBtn=document.getElementById('boostBtn');
+    let boostTouchId=null;
+    bBtn.addEventListener('touchstart',e=>{
+      e.preventDefault();e.stopPropagation();
+      if(boostTouchId===null)boostTouchId=e.changedTouches[0].identifier;
+      this.boost=true;bBtn.classList.add('on');
+    },{passive:false});
+    const boostEnd=e=>{
+      for(let i=0;i<e.changedTouches.length;i++){
+        if(e.changedTouches[i].identifier===boostTouchId){
+          boostTouchId=null;this.boost=false;bBtn.classList.remove('on');break;
+        }
+      }
+    };
+    document.addEventListener('touchend',boostEnd);
+    document.addEventListener('touchcancel',boostEnd);
+    bBtn.addEventListener('mousedown',e=>{e.stopPropagation();this.boost=true;bBtn.classList.add('on');});
+    bBtn.addEventListener('mouseup',()=>{this.boost=false;bBtn.classList.remove('on');});
+    const pwrC=document.getElementById('powerCanvas');
+    let pwrTouchId=null;
+    const doPower=e=>{
+      e.preventDefault();e.stopPropagation();
+      if(this.player&&this.player.alive)
+        this.player.usePower(this.allSnakes().filter(s=>s!==this.player&&s.alive),this.foods);
+    };
+    pwrC.addEventListener('click',doPower);
+    pwrC.addEventListener('touchstart',e=>{
+      e.preventDefault();e.stopPropagation();
+      if(pwrTouchId===null){
+        pwrTouchId=e.changedTouches[0].identifier;
+        doPower(e);
+      }
+    },{passive:false});
+    const pwrEnd=e=>{
+      for(let i=0;i<e.changedTouches.length;i++){
+        if(e.changedTouches[i].identifier===pwrTouchId){pwrTouchId=null;break;}
+      }
+    };
+    document.addEventListener('touchend',pwrEnd);
+    document.addEventListener('touchcancel',pwrEnd);
+    document.addEventListener('keydown',e=>{if((e.key==='q'||e.key==='Q')&&this.player&&this.player.alive)this.player.usePower(this.allSnakes().filter(s=>s!==this.player&&s.alive),this.foods);});
+  }
+  update(dt){
+    if(this.gameOver||this.respawning||this.paused)return;
+    // player movement
+    const p=this.player;
+    if(p.alive){
+      const j=this.joystick;
+      if(j.active&&j.mag>0.12){
+        const tgt=new V(Math.cos(j.angle),Math.sin(j.angle));
+        const curr=p.vel.norm();
+        const turnRate=p.sp.id==='sidewinder'?0.55:0.28; // sidewinder turns tighter
+        const lerped=curr.add(tgt.mul(turnRate)).norm();
+        p.vel=lerped;
+      }else{
+        const tgt=new V(Math.cos(this.mouseAngle),Math.sin(this.mouseAngle));
+        const curr=p.vel.norm();
+        const turnRate=p.sp.id==='sidewinder'?0.48:0.22;
+        const lerped=curr.add(tgt.mul(turnRate)).norm();
+        p.vel=lerped;
+      }
+      p.boosting=this.boost||this.keyBoost;
+      // venom trail passive — throttled to 5/sec
+      if(p.boosting&&p.sp.id==='spitting_cobra'){
+        if(!p._trailT||p._trailT<=0){this.slowZones.push(new SlowZone(p.pos.x,p.pos.y,3,p.sp.pwrC,p));p._trailT=0.2;}
+        else p._trailT-=dt;
+      }
+      // burmese python ambush passive
+      if(p.sp.id==='burmese_python'){
+        p.stillTimer=p.boosting?0:p.stillTimer;
+      }
+    }
+    // bots
+    const liveSnakes=this.allSnakes().filter(s=>s.alive);
+    this.bots.filter(b=>b.alive).forEach(b=>{
+      if(b.ai)b.ai.think(dt,this.foods,liveSnakes);
+      // venom trail handled inside BotAI.think()
+    });
+    // reset aura flags then apply
+    liveSnakes.forEach(s=>{s.debuffs._auraApplied=false;});
+    liveSnakes.filter(s=>s.sp.id==='king_cobra'||s.sp.id==='black_mamba').forEach(aura=>{
+      const range=aura.sp.id==='king_cobra'?80:70;
+      const slow=aura.sp.id==='king_cobra'?0.2:0.1;
+      liveSnakes.forEach(t=>{
+        if(t!==aura&&!t.nulled()&&aura.pos.dist(t.pos)<range)
+          t.debuffs.slow=Math.max(t.debuffs.slow||0,slow);
+          t.debuffs._auraApplied=true;
+      });
+    });
+    // update all snakes
+    this.allSnakes().forEach(s=>s.update(dt));
+    // food
+    this.foods.forEach(f=>f.update(dt));
+    this.foods=this.foods.filter(f=>f.alive);
+    // replenish ambient food — only check every 2 seconds
+    this.replenishT-=dt;
+    if(this.replenishT<=0){
+      this.replenishT=2;
+      const ambCount=this.foods.reduce((n,f)=>n+(f.type==='amb'?1:0),0);
+      const needed=CFG.FOOD_AMB-ambCount;
+      for(let i=0;i<needed;i++)this.foods.push(new Food(Math.random()*CFG.WORLD,Math.random()*CFG.WORLD,'amb'));
+      // replenish hot zone pad food — 3x density per pad
+      CFG.PADS.forEach((pad,pi)=>{
+        const padFoods=this.foods.filter(f=>f.alive&&f.type==='amb'&&
+          Math.sqrt((f.pos.x-pad[0])**2+(f.pos.y-pad[1])**2)<CFG.PAD_R);
+        const padNeeded=CFG.PAD_FOOD-padFoods.length;
+        const padColors=['#00ffff','#ff4444','#ff8822','#88ccff','#cc44ff'];
+        for(let i=0;i<padNeeded;i++){
+          // scatter within pad circle
+          const angle=Math.random()*Math.PI*2;
+          const dist=Math.random()*CFG.PAD_R*0.9;
+          const fx=Math.max(20,Math.min(CFG.WORLD-20,pad[0]+Math.cos(angle)*dist));
+          const fy=Math.max(20,Math.min(CFG.WORLD-20,pad[1]+Math.sin(angle)*dist));
+          const f=new Food(fx,fy,'amb');
+          f.color=padColors[pi];  // tint pad food to match zone color
+          f.r=6; f.baseVal=3;     // slightly bigger + 3x value
+          this.foods.push(f);
+        }
+      });
+    }
+    // slow zones
+    this.slowZones.forEach(z=>z.update(dt));
+    this.slowZones=this.slowZones.filter(z=>z.alive);
+    // slow zone effect
+    this.slowZones.forEach(z=>{
+      this.allSnakes().filter(s=>s.alive&&s!==z.owner).forEach(s=>{
+        if(s.pos.dist(z.pos)<z.r&&!s.nulled())s.debuffs.slow=Math.max(s.debuffs.slow||0,0.3);
+      });
+    });
+    // projectiles
+    this.projs.forEach(pj=>pj.update(dt));
+    this.projs=this.projs.filter(pj=>pj.alive);
+    // projectile hits
+    this.projs.forEach(pj=>{
+      this.allSnakes().filter(s=>s.alive&&s!==pj.owner).forEach(s=>{
+        if(pj.pos.dist(s.segs[0])<s.r+pj.r){
+          pj.alive=false;
+          if(!s.nulled()){s.debuffs.slow=0.5;s.debuffs.stunEnd=Date.now()+3000;}
+          this.dmgNums.push(new DmgNum(s.pos.x,s.pos.y,'SLOW!','#88ff00'));
+        }
+      });
+    });
+    // damage numbers
+    this.dmgNums.forEach(d=>d.update(dt));
+    this.dmgNums=this.dmgNums.filter(d=>d.life>0);
+    this.powerEffects.forEach(e=>e.update(dt));
+    this.powerEffects=this.powerEffects.filter(e=>e.alive);
+    // vacuum food
+    const allLive=this.allSnakes().filter(s=>s.alive);
+    allLive.forEach(s=>{
+      // vacuum = 3 head-lengths — grows proportionally with snake size
+      const vr=s.r*(s.sp.id==='retic_python'&&s.pwrActive?6:3);
+      const head=s.segs[0];
+      this.foods.filter(f=>f.alive).forEach(f=>{
+        if(head.dist(f.pos)<vr){f.alive=false;s.grow(f.baseVal);}
+      });
+    });
+    // ── COLLISION: HEAD-ONLY ──────────────────────────────────────────────
+    const headPairs=new Set();
+    const aliveNow=liveSnakes; // use already-cached ref
+    aliveNow.forEach(a=>{
+      aliveNow.forEach(b=>{
+        if(a===b||!a.alive||!b.alive)return;
+        // head-to-head (process once per pair)
+        const pk=[a.name,b.name].sort().join('|');
+        if(!headPairs.has(pk)&&a.headHitsHead(b)){
+          headPairs.add(pk);
+          if(!a.invince){
+            const ra=a.takeDmg(b.atk,b);
+            this.dmgNums.push(new DmgNum(a.pos.x,a.pos.y,'-'+ra.dmg,b.isPlayer?'#ff3300':b.sp.pwrC));
+            if(ra.died){const dr=a.die(b);this.handleDeath(a,b,dr);}
+          }
+          if(!b.invince&&b.alive){
+            const rb=b.takeDmg(a.atk,a);
+            this.dmgNums.push(new DmgNum(b.pos.x,b.pos.y,'-'+rb.dmg,a.isPlayer?'#ff3300':a.sp.pwrC));
+            if(rb.died){const dr=b.die(a);this.handleDeath(b,a,dr);}
+          }
+        }
+        // a's head hits b's body → a takes b's atk damage
+        if(a.alive&&!a.invince&&a.headHitsBody(b)){
+          const ra=a.takeDmg(b.atk,b);
+          this.dmgNums.push(new DmgNum(a.pos.x,a.pos.y,'-'+ra.dmg,b.isPlayer?'#ff3300':b.sp.pwrC));
+          if(ra.died){const dr=a.die(b);this.handleDeath(a,b,dr);}
+        }
+      });
+    });
+    // ── PLAYER LIFE CHECK ───────────────────────────────────────────────
+    if(!p.alive&&!this.gameOver&&!this.respawning){
+      if(this.playerLives>0){this.doRespawn();}
+      else{this.endGame();}
+    }
+    // camera
+    if(p.alive){
+      const tx=p.pos.x-this.canvas.width/2,ty=p.pos.y-this.canvas.height/2;
+      this.cam.x+=(tx-this.cam.x)*0.1;this.cam.y+=(ty-this.cam.y)*0.1;
+    }
+    this.updateHUD();
+  }
+  addKillFeed(msg){
+    const kf=document.getElementById('killfeed');
+    const el=document.createElement('div');el.className='kfe';el.textContent=msg;
+    kf.prepend(el);this.killFeedEntries.push(el);
+    setTimeout(()=>{el.style.opacity='0';},2800);
+    setTimeout(()=>{el.remove();this.killFeedEntries=this.killFeedEntries.filter(e=>e!==el);},3300);
+    if(kf.children.length>4)kf.lastElementChild.remove();
+  }
+  checkLifeEarn(){
+    const p=this.player;
+    if(!p||!p.alive)return;
+    if(p.score>=this.nextLifeScore&&this.playerLives<CFG.MAX_LIVES){
+      this.playerLives++;
+      this.livesEarned++;
+      const earned=this.nextLifeScore;
+      this.nextLifeScore*=2; // double each time
+      this.updateLivesHUD();
+      // flash notification
+      const el=document.getElementById('lifeEarned');
+      const sub=document.getElementById('lifeEarnedSub');
+      if(el){
+        el.classList.remove('show');
+        void el.offsetWidth; // force reflow
+        sub.textContent=`SCORE: ${earned.toLocaleString()}`;
+        el.classList.add('show');
+        setTimeout(()=>el.classList.remove('show'),2200);
+      }
+    }
+    // update progress bar toward next life
+    const fill=document.getElementById('nextLifeFill');
+    const val=document.getElementById('nextLifeVal');
+    const hub=document.getElementById('nextLifeHud');
+    if(!fill||!val||!hub)return;
+    if(this.playerLives>=CFG.MAX_LIVES){
+      hub.style.display='none';return; // hidden in flex
+    }
+    hub.style.display=''; // let flex control it
+    const prev=this.nextLifeScore/2;
+    const pct=Math.min(100,((p.score-prev)/(this.nextLifeScore-prev))*100);
+    fill.style.width=Math.max(0,pct)+'%';
+    val.textContent=Math.floor(p.score).toLocaleString()+' / '+this.nextLifeScore.toLocaleString();
+  }
+  updateHUD(){
+    const p=this.player;
+    this.checkLifeEarn();
+
+    document.getElementById('scoreDsp').textContent=Math.floor(p.score).toLocaleString();
+    document.getElementById('killDsp').textContent=p.kills;
+    document.getElementById('lenDsp').textContent=p.len;
+    // hp hearts
+    const hh=document.getElementById('hpHearts');hh.innerHTML='';
+    for(let i=0;i<p.maxHp;i++)hh.innerHTML+=i<p.hp?'❤️':'🖤';
+    // leaderboard
+    const all=this.allSnakes().filter(s=>s.alive).sort((a,b)=>b.score-a.score).slice(0,7);
+    const lb=document.getElementById('lbList');lb.innerHTML='';
+    all.forEach((s,i)=>{
+      const el=document.createElement('div');el.className='lb-entry'+(s.isPlayer?' me':'');
+      el.innerHTML=`<span>${i+1}. ${s.isPlayer?'YOU':s.name}</span><span>${Math.floor(s.score)}</span>`;
+      lb.appendChild(el);
+    });
+    // power canvas
+    const pc=document.getElementById('powerCanvas'),pctx=pc.getContext('2d');
+    pctx.clearRect(0,0,90,90);
+    const cx=45,cy=45,rad=36;
+    pctx.beginPath();pctx.arc(cx,cy,rad,0,Math.PI*2);
+    pctx.strokeStyle='rgba(255,255,255,0.12)';pctx.lineWidth=5;pctx.stroke();
+    const cdRatio=p.pwrCd/CFG.PWR_CD;
+    const pColor=p.sp.pwrC;
+    if(cdRatio>0){
+      pctx.beginPath();pctx.arc(cx,cy,rad,-Math.PI/2,-Math.PI/2+Math.PI*2*(1-cdRatio));
+      pctx.strokeStyle='rgba(100,100,100,0.6)';pctx.lineWidth=5;pctx.stroke();
+    }else{
+      pctx.beginPath();pctx.arc(cx,cy,rad,0,Math.PI*2);
+      pctx.shadowBlur=16;pctx.shadowColor=pColor;pctx.strokeStyle=pColor;pctx.lineWidth=5;pctx.stroke();pctx.shadowBlur=0;
+    }
+    pctx.fillStyle=cdRatio>0?'rgba(255,255,255,0.38)':pColor;
+    pctx.font='bold 7px "Press Start 2P"';pctx.textAlign='center';pctx.textBaseline='middle';
+    // Show first 2 words max, truncated to fit the circle
+    const _parts=p.sp.pwrName.split(' ');
+    const pwrLabel=_parts.length>1&&_parts[0].length<=5?_parts[0]+' '+_parts[1]:_parts[0];
+    const pwrLabelShort=pwrLabel.length>9?pwrLabel.slice(0,8):pwrLabel;
+    pctx.font='bold 6px "Press Start 2P"';pctx.fillText(pwrLabelShort,cx,cy-5);
+    if(cdRatio>0){
+      pctx.fillStyle='rgba(255,255,255,0.55)';pctx.font='bold 8px "Press Start 2P"';
+      pctx.fillText(Math.ceil(p.pwrCd/1000)+'s',cx,cy+7);
+    }else{
+      pctx.fillStyle='rgba(255,255,255,0.7)';pctx.font='6px "Press Start 2P"';
+      pctx.fillText('[Q]',cx,cy+8);
+    }
+    document.getElementById('pwrReady').style.display=p.pwrCd===0?'block':'none';
+    document.getElementById('pwrSpecies').textContent=p.sp.name;
+  }
+  draw(){
+    const ctx=this.ctx,cam=this.cam,W=this.canvas.width,H=this.canvas.height;
+    // ── SIZE-DRIVEN ZOOM + RENDER DISTANCE ─────────────────────────────────
+    if(!this.zoomLocked&&this.player&&this.player.alive){
+      const len=this.player.len||3;
+      // Smoothly zoom out as snake grows:
+      // len 3→50: zoom 0.5→0.42  len 50→200: 0.42→0.28  len 200+: holds at 0.2
+      const targetZoom=Math.max(0.2, 0.5 - (len/600));
+      // Lerp toward target — 1.5% per frame = smooth glide not snap
+      this.zoom+=(targetZoom-this.zoom)*0.015;
+    }
+    const z=this.zoom;
+    // Update HUD label
+    const _v=document.getElementById('zoomLockVal');
+    if(_v)_v.textContent=(this.zoomLocked?'🔒 ':'')+(z.toFixed(2))+'x';
+    // Dynamic render padding — grows with zoom-out AND screen size
+    const diagScale=Math.sqrt(W*W+H*H)/1200;
+    PAD=Math.ceil((200*diagScale)/Math.max(0.25,z)); // larger pad when zoomed out
+    this.renderPad=PAD;
+    ctx.fillStyle='#040012';ctx.fillRect(0,0,W,H);
+    // apply zoom centred on canvas
+    ctx.save();
+    ctx.translate(W/2,H/2);ctx.scale(z,z);ctx.translate(-W/2,-H/2);
+    // grid
+    ctx.strokeStyle='rgba(0,255,255,0.04)';ctx.lineWidth=1;
+    const gs2=100;
+    for(let x=-(cam.x%gs2);x<W;x+=gs2){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=-(cam.y%gs2);y<H;y+=gs2){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    // border
+    const bp=80,br=32;
+    ctx.shadowBlur=30;ctx.shadowColor='rgba(255,120,0,0.7)';
+    ctx.strokeStyle='rgba(255,150,50,0.8)';ctx.lineWidth=10;
+    ctx.beginPath();ctx.roundRect(-cam.x-bp,-cam.y-bp,CFG.WORLD+bp*2,CFG.WORLD+bp*2,br);ctx.stroke();
+    ctx.shadowBlur=0;ctx.strokeStyle='rgba(255,50,50,0.3)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.roundRect(-cam.x+50,-cam.y+50,CFG.WORLD-100,CFG.WORLD-100,8);ctx.stroke();
+    // ── HOT ZONE PADS ────────────────────────────────────────────────────────
+    const padColors=['rgba(0,255,255,',  'rgba(255,60,60,',  'rgba(255,130,0,',  'rgba(80,180,255,',  'rgba(180,0,255,'];
+    const padLabels=['⚡ CENTER','💀 NW','🔥 NE','❄️ SW','☠️ SE'];
+    const padT=(Date.now()/1200)%( Math.PI*2);
+    CFG.PADS.forEach((pad,pi)=>{
+      const px=pad[0]-cam.x, py=pad[1]-cam.y;
+      if(px<-CFG.PAD_R-60||px>W+CFG.PAD_R+60||py<-CFG.PAD_R-60||py>H+CFG.PAD_R+60)return;
+      const col=padColors[pi];
+      const pulse=0.85+Math.sin(padT+pi*1.2)*0.15;
+      const pr=CFG.PAD_R*pulse;
+      ctx.save();
+      // outer glow ring
+      ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);
+      ctx.strokeStyle=col+'0.55)';ctx.lineWidth=3;
+      ctx.shadowBlur=22;ctx.shadowColor=col+'0.7)';ctx.stroke();
+      // second ring
+      ctx.beginPath();ctx.arc(px,py,pr*0.7,0,Math.PI*2);
+      ctx.strokeStyle=col+'0.25)';ctx.lineWidth=1.5;ctx.shadowBlur=0;ctx.stroke();
+      // fill glow
+      ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);
+      const radGrad=ctx.createRadialGradient(px,py,0,px,py,pr);
+      radGrad.addColorStop(0,col+'0.12)');
+      radGrad.addColorStop(1,col+'0)');
+      ctx.fillStyle=radGrad;ctx.fill();
+      // label
+      ctx.font='bold 9px "Press Start 2P"';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillStyle=col+'0.9)';ctx.shadowBlur=10;ctx.shadowColor=col+'0.8)';
+      ctx.fillText('3X FOOD',px,py-14);
+      ctx.font='13px "Press Start 2P"';
+      ctx.fillText(padLabels[pi],px,py+6);
+      ctx.shadowBlur=0;ctx.restore();
+    });
+    // slow zones
+    this.slowZones.forEach(z=>z.draw(ctx,cam));
+    // food
+    this.foods.forEach(f=>f.draw(ctx,cam));
+    // projectiles
+    this.projs.forEach(p=>p.draw(ctx,cam));
+    // snakes
+    const sorted=this.allSnakes().filter(s=>s.alive).sort((a,b)=>b.len-a.len);
+    sorted.forEach(s=>s.draw(ctx,cam));
+    // rattlesnake heat pit passive
+    this.allSnakes().filter(s=>s.alive&&(s.sp.id==='rattlesnake'||s.sp.id==='copperhead')).forEach(sensor=>{
+      this.allSnakes().filter(s=>s.alive&&s!==sensor).forEach(target=>{
+        const sx=target.pos.x-cam.x,sy=target.pos.y-cam.y;
+        if(sx<-PAD||sx>W+PAD||sy<-PAD||sy>H+PAD)return;
+        ctx.save();ctx.shadowBlur=18;ctx.shadowColor='rgba(255,80,80,0.7)';
+        ctx.strokeStyle='rgba(255,80,80,0.55)';ctx.lineWidth=2.5;
+        ctx.beginPath();ctx.arc(sx,sy,target.r+7,0,Math.PI*2);ctx.stroke();ctx.restore();
+      });
+    });
+    // damage numbers
+    this.powerEffects.forEach(e=>e.draw(ctx,cam));
+    this.dmgNums.forEach(d=>d.draw(ctx,cam));
+    ctx.restore(); // end zoom
+    // score orb labels
+    this.foods.filter(f=>f.type==='score'&&f.alive).forEach(f=>{
+      const sx=f.pos.x-cam.x,sy=f.pos.y-cam.y;
+      if(sx<-PAD||sx>W+PAD||sy<-PAD||sy>H+PAD)return;
+      ctx.save();ctx.font='bold 6px "Press Start 2P"';ctx.fillStyle='#ffff88';ctx.textAlign='center';
+      ctx.fillText('+'+f.baseVal*10,sx,sy-f.r-3);ctx.restore();
+    });
+  }
+  handleDeath(dead,killer,drops){
+    if(drops){if(drops.bodyDrops)this.foods.push(...drops.bodyDrops);if(drops.scoreDrops)this.foods.push(...drops.scoreDrops);}
+    if(killer){if(killer.neurostrike)killer.neurostrike=false;if(killer.strikeCoil)killer.strikeCoil=false;}
+    const aname=killer?(killer.isPlayer?'YOU':killer.name):'WALL';
+    const dname=dead.isPlayer?'YOU':dead.name;
+    this.addKillFeed(`${aname} ate ${dname}`);
+    if(!dead.isPlayer){
+      setTimeout(()=>{
+        const d=DIFF[currentDiff];
+        const nx=Math.random()*(CFG.WORLD-600)+300,ny=Math.random()*(CFG.WORLD-600)+300;
+        const nb=new Snake(nx,ny,dead.name,false,dead.speciesId,dead.color);
+        nb.spdMult=dead.sp.spd*d.spdScale;nb.bstMult=dead.sp.bst*(0.8+d.spdScale*0.2);
+        nb.ai=new BotAI(nb);
+        const idx=this.bots.indexOf(dead);if(idx>=0)this.bots[idx]=nb;
+      },3500);
+    }
+  }
+  doRespawn(){
+    this.playerLives--;this.respawning=true;
+    const ov=document.getElementById('respawnOverlay');ov.classList.add('show');
+    document.getElementById('respSub').textContent=`Lives remaining: ${this.playerLives}`;
+    setTimeout(()=>{
+      if(this.gameOver)return;
+      const p=this.player;
+      const nx=Math.random()*(CFG.WORLD-600)+300,ny=Math.random()*(CFG.WORLD-600)+300;
+      p.alive=true;p.pos=new V(nx,ny);p.segs=[p.pos.clone()];
+      p.targetLen=Math.max(3,Math.floor(p.targetLen*0.5));
+      p.hp=p.maxHp;p.boosting=false;p.debuffs={};
+      // coral snake passive: randomize name on respawn
+      if(p.sp.id==='coral_snake'){
+        const aliases=['PHANTOM','STRIX','MORPH','GHOST','SHADE','ECHO','MIMIC','ZERO'];
+        p.name=aliases[Math.floor(Math.random()*aliases.length)];
+      }
+      for(let i=1;i<20;i++)p.segs.push(new V(nx-i*p.r*1.4,ny));
+      p.makeInvince(CFG.INVINCE);
+      this.respawning=false;ov.classList.remove('show');
+      this.updateLivesHUD();
+    },2200);
+  }
+  updateLivesHUD(){
+    const li=document.getElementById('livesIcons');if(!li)return;
+    li.innerHTML='';
+    const show=Math.max(CFG.PLAYER_LIVES,this.playerLives);
+    for(let i=0;i<show;i++)li.innerHTML+=i<this.playerLives?'🌟':'⭐';
+  }
+  updateZoomHUD(){
+    const btn=document.getElementById('zoomLockBtn');
+    const icon=document.getElementById('zoomLockIcon');
+    const val=document.getElementById('zoomLockVal');
+    if(!btn)return;
+    if(this.zoomLocked){
+      btn.classList.add('locked');
+      icon.textContent='🔒';
+      val.textContent=this.zoom.toFixed(2)+'x SAVED';
+    }else{
+      btn.classList.remove('locked');
+      icon.textContent='🔓';
+      val.textContent=this.zoom.toFixed(2)+'x';
+    }
+  }
+  bindZoomPause(){
+    const cvs=this.canvas;
+    // ── Pinch zoom ──────────────────────────────────────────────────────────
+    cvs.addEventListener('touchstart',e=>{
+      if(e.touches.length===2){
+        const dx=e.touches[0].clientX-e.touches[1].clientX;
+        const dy=e.touches[0].clientY-e.touches[1].clientY;
+        this.pinchDist0=Math.sqrt(dx*dx+dy*dy);
+        this.zoom0=this.zoom;
+      }
+    },{passive:true});
+    cvs.addEventListener('touchmove',e=>{
+      if(e.touches.length===2&&this.pinchDist0){
+        e.preventDefault();
+        const dx=e.touches[0].clientX-e.touches[1].clientX;
+        const dy=e.touches[0].clientY-e.touches[1].clientY;
+        const dist=Math.sqrt(dx*dx+dy*dy);
+        if(!this.zoomLocked){
+          this.zoom=Math.max(0.35,Math.min(2.5,this.zoom0*(dist/this.pinchDist0)));
+          this.updateZoomHUD();
+        }
+      }
+    },{passive:false});
+    cvs.addEventListener('touchend',e=>{if(e.touches.length<2)this.pinchDist0=null;});
+    // Mouse wheel zoom (desktop)
+    cvs.addEventListener('wheel',e=>{
+      e.preventDefault();
+      const delta=e.deltaY>0?0.92:1.09;
+      if(!this.zoomLocked){
+        this.zoom=Math.max(0.35,Math.min(2.5,this.zoom*delta));
+        this.updateZoomHUD();
+      }
+    },{passive:false});
+    // ── Pause / Resume ──────────────────────────────────────────────────────
+    const pauseBtn=document.getElementById('pauseBtn');
+    const resumeBtn=document.getElementById('resumeBtn');
+    const quitBtn=document.getElementById('quitBtn');
+    const ov=document.getElementById('pauseOverlay');
+    const togglePause=()=>{
+      if(this.gameOver)return;
+      this.paused=!this.paused;
+      ov.classList.toggle('show',this.paused);
+      pauseBtn.textContent=this.paused?'▶ PLAY':'⏸ PAUSE';
+      if(this.paused){
+        // start pause zoom animation
+        this.pauseZoomBase=this.zoom;
+        this.pauseZoomT=0;
+        const animatePause=(ts)=>{
+          if(!this.paused){cancelAnimationFrame(this.pauseAnimId);this.pauseAnimId=null;return;}
+          this.pauseZoomT+=0.016;
+          // slow breathe: zoom gently in and out ±15% from base
+          const breath=Math.sin(this.pauseZoomT*0.7)*0.15;
+          this.zoom=Math.max(0.35,Math.min(2.5,this.pauseZoomBase+breath));
+          this.draw();
+          this.pauseAnimId=requestAnimationFrame(animatePause);
+        };
+        this.pauseAnimId=requestAnimationFrame(animatePause);
+      }else{
+        if(this.pauseAnimId){cancelAnimationFrame(this.pauseAnimId);this.pauseAnimId=null;}
+        this.zoom=this.pauseZoomBase; // restore zoom on resume
+        this.lastTime=0;
+        this.loop(performance.now());
+      }
+    };
+    pauseBtn.addEventListener('click',togglePause);
+    pauseBtn.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();togglePause();},{passive:false});
+    resumeBtn.addEventListener('click',togglePause);
+    resumeBtn.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();togglePause();},{passive:false});
+    quitBtn.addEventListener('click',()=>{
+      this.paused=false;this.gameOver=true;
+      ov.classList.remove('show');
+      document.getElementById('gameScreen').classList.remove('active');
+      document.getElementById('menuScreen').classList.add('active');
+      // ── GLOBAL FULLSCREEN ────────────────────────────────────────────────────────
+function toggleFS(){
+  const el=document.documentElement;
+  if(!document.fullscreenElement&&!document.webkitFullscreenElement){
+    const req=el.requestFullscreen||el.webkitRequestFullscreen||el.mozRequestFullScreen||el.msRequestFullscreen;
+    if(req)req.call(el);
+    document.querySelectorAll('.fs-btn').forEach(b=>b.textContent='⛶ EXIT');
+  }else{
+    const ex=document.exitFullscreen||document.webkitExitFullscreen||document.mozCancelFullScreen||document.msExitFullscreen;
+    if(ex)ex.call(document);
+    document.querySelectorAll('.fs-btn').forEach(b=>b.textContent='⛶ FULL');
+  }
+}
+['fullscreenchange','webkitfullscreenchange'].forEach(e=>{
+  document.addEventListener(e,()=>{
+    const full=!!(document.fullscreenElement||document.webkitFullscreenElement);
+    document.querySelectorAll('.fs-btn').forEach(b=>b.textContent=full?'⛶ EXIT':'⛶ FULL');
+  });
+});
+document.getElementById('menuBest').textContent=gs.best.toLocaleString();
+// ── PLAYER NAME ──────────────────────────────────────────────────────────────
+const _ni=document.getElementById('playerNameInput');
+if(_ni){
+  _ni.value=gs.playerName||'';
+  _ni.addEventListener('input',()=>{
+    gs.playerName=_ni.value.toUpperCase().replace(/[^A-Z0-9 _\-]/g,'').slice(0,12);
+    _ni.value=gs.playerName;
+    try{localStorage.setItem('snakeULTRA2',JSON.stringify(gs));}catch(e){}
+  });
+}
+    });
+    quitBtn.addEventListener('touchstart',e=>{e.stopPropagation();quitBtn.click();},{passive:false});
+    document.addEventListener('keydown',e=>{
+      if(e.key==='Escape'||e.key==='p'||e.key==='P')togglePause();
+      if(e.key==='f'||e.key==='F')toggleFS();
+    });
+    // ── Fullscreen ─────────────────────────────────────────────────────────
+    const fsBtn=document.getElementById('fsBtn');
+    // fullscreen — uses global toggleFS()
+    fsBtn.addEventListener('click',e=>{e.stopPropagation();toggleFS();});
+    fsBtn.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();toggleFS();},{passive:false});
+    // ── Zoom lock ──────────────────────────────────────────────────────────
+    const zlBtn=document.getElementById('zoomLockBtn');
+    const doToggleLock=()=>{
+      this.zoomLocked=!this.zoomLocked;
+      if(this.zoomLocked){
+        try{localStorage.setItem('snakeZoom',this.zoom.toFixed(3));
+            localStorage.setItem('snakeZoomLock','1');}catch(e){}
+      }else{
+        try{localStorage.removeItem('snakeZoomLock');}catch(e){}
+      }
+      this.updateZoomHUD();
+    };
+    zlBtn.addEventListener('click',e=>{e.stopPropagation();doToggleLock();});
+    zlBtn.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();doToggleLock();},{passive:false});
+    this.updateZoomHUD();
+  }
+  endGame(){
+    this.gameOver=true;
+    if(this.pauseAnimId){cancelAnimationFrame(this.pauseAnimId);this.pauseAnimId=null;}gs.games++;
+    if(this.player.score>gs.best)gs.best=Math.floor(this.player.score);
+    try{localStorage.setItem('snakeULTRA2',JSON.stringify(gs));}catch(e){}
+    const all=this.allSnakes().sort((a,b)=>b.score-a.score);
+    const rank=all.findIndex(s=>s.isPlayer)+1;
+    document.getElementById('finalScore').textContent=Math.floor(this.player.score).toLocaleString();
+    document.getElementById('finalKills').textContent=this.player.kills;
+    document.getElementById('finalLen').textContent=this.player.len;
+    document.getElementById('finalRank').textContent='#'+rank;
+    document.getElementById('modalTitle').textContent=rank===1?'CHAMPION!':'GAME OVER';
+    document.getElementById('gameOverModal').classList.add('active');
+  }
+  loop(ts){
+    if(!this.lastTime)this.lastTime=ts;
+    const dt=Math.min((ts-this.lastTime)/1000,0.1);
+    this.lastTime=ts;
+    this.update(dt);this.draw();
+    if(!this.gameOver&&!this.paused)requestAnimationFrame(t=>this.loop(t));
+  }
+  start(){requestAnimationFrame(t=>this.loop(t));}
+}
+
+// ─── SELECT SCREEN ─────────────────────────────────────────────────────────
+function buildSelectScreen(){
+  const grid=document.getElementById('snakeGrid');
+  grid.innerHTML='';
+  SPECIES.forEach(sp=>{
+    const c=document.createElement('div');c.className='scard'+(sp.id===selId?' sel':'');
+    c.style.setProperty('--cc',sColors[sp.id]||sp.defCol);
+    const iconSvg=`<canvas class='card-snake-cv' data-sp='${sp.id}' width='48' height='48'></canvas>`;
+    const hpPips='❤'.repeat(sp.hp);
+    const spdLabel=sp.spd>=1.5?'FAST':sp.spd>=1.0?'MED':'SLOW';
+    const roleLabel=sp.bot.charAt(0).toUpperCase()+sp.bot.slice(1);
+    c.innerHTML=`<div class="sc-em" style="width:48px;height:48px;flex-shrink:0">${iconSvg}</div>
+      <div class="sc-info">
+        <div class="sc-nm">${sp.name}</div>
+        <div class="sc-cls" style="color:${sp.clsC}">${sp.cls}</div>
+        <div class="sc-badge">
+          <span class="sc-pip hp">${hpPips}</span>
+          <span class="sc-pip spd">${spdLabel}</span>
+          <span class="sc-pip role">${roleLabel}</span>
+        </div>
+      </div>`;
+    c.onclick=()=>{selId=sp.id;buildSelectScreen();buildDetail();
+      setTimeout(()=>{const el=document.querySelector('.scard.sel');if(el)el.scrollIntoView({block:'nearest',behavior:'smooth'});},50);
+    };
+    grid.appendChild(c);
+  });
+  buildDetail();
+}
+function buildDetail(){
+  const sp=SPECIES.find(s=>s.id===selId);
+  const det=document.getElementById('snakeDet');
+  const statBar=(val,max,col)=>`<div class="stat-bar"><div class="stat-fill" style="width:${(val/max)*100}%;background:${col}"></div></div>`;
+  const _botRole=sp.bot.charAt(0).toUpperCase()+sp.bot.slice(1);
+    const _spdStr=sp.spd>=1.5?'⚡ FAST':sp.spd>=1.0?'◆ MED':'🐢 SLOW';
+    const _hpStr='❤️'.repeat(sp.hp);
+    const _roleC=sp.cls==='GLASS CANNON'?'#ff5555':sp.cls==='TANK'?'#55aaff':'#ffaa00';
+    det.innerHTML=`
+    <div class="det-nm" style="color:${sColors[sp.id]||sp.defCol}">${sp.name}</div>
+    <div class="det-cls" style="color:${sp.clsC}">${sp.cls}</div>
+    <div class="det-role-bar">
+      <span class="det-role-pip" style="color:${_roleC};border-color:${_roleC}88">${_hpStr} HP</span>
+      <span class="det-role-pip" style="color:#00ddff;border-color:#00ddff88">${_spdStr}</span>
+      <span class="det-role-pip" style="color:#ffcc44;border-color:#ffcc4488">${_botRole}</span>
+    </div>
+    <div class="stat-row"><div class="stat-lbl">HP</div>${statBar(sp.hp,5,'#ff4444')}<div style="font-family:var(--pix);font-size:7px;width:14px;color:#ff4444">${sp.hp}</div></div>
+    <div class="stat-row"><div class="stat-lbl">ATK</div>${statBar(sp.atk,2,'#ff8800')}<div style="font-family:var(--pix);font-size:7px;width:14px;color:#ff8800">${sp.atk}</div></div>
+    <div class="stat-row"><div class="stat-lbl">SPD</div>${statBar(sp.spd,1.8,'#00ffff')}<div style="font-family:var(--pix);font-size:7px;width:20px;color:#00ffff">${sp.spd}x</div></div>
+    <div class="stat-row"><div class="stat-lbl">BOOST</div>${statBar(sp.bst,4.5,'#ffff00')}<div style="font-family:var(--pix);font-size:7px;width:20px;color:#ffff00">${sp.bst}x</div></div>
+    <div class="abox"><div class="ab-type">PASSIVE</div><div class="ab-nm" style="color:${sp.clsC}">${sp.passive.split(':')[0]}</div><div class="ab-desc">${sp.passive.split(':').slice(1).join(':').trim()}</div></div>
+    <div class="abox"><div class="ab-type">POWER · 9s COOLDOWN · [Q]</div><div class="ab-nm" style="color:${sp.pwrC}">${sp.pwrName}</div><div class="ab-desc">${sp.pwrDesc}</div></div>
+    <div class="clr-lbl">CUSTOMIZE COLOR</div>
+    <div class="clr-row">
+      <canvas id="colorCanvas" width="80" height="80"></canvas>
+      <div class="clr-preview">
+        <div id="colorPreview" style="background:${sColors[sp.id]||sp.defCol}"></div>
+        <div class="clr-hint">DRAG WHEEL</div>
+      </div>
+      <canvas id="snakePrev" width="150" height="90"></canvas>
+    </div>`;
+  buildColorWheel();drawSnakePreview();
+  // initial draw of all card canvases (anim loop will keep updating)
+  document.querySelectorAll('.card-snake-cv').forEach(cv=>{
+    drawCardSnake(cv,cv.dataset.sp,sColors[cv.dataset.sp]||SPECIES.find(s=>s.id===cv.dataset.sp).defCol,previewT);
+  });
+}
+function buildColorWheel(){
+  const cvs=document.getElementById('colorCanvas');
+  if(!cvs)return;
+  const ctx=cvs.getContext('2d'),cx=40,cy=40,r=36;
+  ctx.clearRect(0,0,80,80);
+  for(let a=0;a<360;a++){
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,a*Math.PI/180,(a+2)*Math.PI/180);
+    ctx.fillStyle=`hsl(${a},100%,55%)`;ctx.fill();
+  }
+  // dark center
+  const grd=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+  grd.addColorStop(0,'rgba(0,0,0,0.85)');grd.addColorStop(0.4,'rgba(0,0,0,0)');
+  ctx.fillStyle=grd;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();
+  const drag=e=>{
+    const rect=cvs.getBoundingClientRect();
+    const t=e.touches?e.touches[0]:e;
+    const dx=t.clientX-rect.left-cx,dy=t.clientY-rect.top-cy;
+    const angle=Math.atan2(dy,dx)*180/Math.PI;
+    const dist=Math.min(Math.sqrt(dx*dx+dy*dy),r);
+    const light=55-dist/r*25;
+    const col=`hsl(${(angle+360)%360},100%,${light}%)`;
+    sColors[selId]=col;
+    const prev=document.getElementById('colorPreview');
+    if(prev)prev.style.background=col;
+    const card=document.querySelector(`.scard.sel`);
+    if(card)card.style.setProperty('--cc',col);
+    drawSnakePreview();
+  };
+  cvs.onmousedown=e=>{drag(e);cvs.onmousemove=drag;};
+  document.onmouseup=()=>{cvs.onmousemove=null;};
+  cvs.addEventListener('touchstart',e=>{e.preventDefault();drag(e);},{passive:false});
+  cvs.addEventListener('touchmove',e=>{e.preventDefault();drag(e);},{passive:false});
+}
+function drawCardSnake(cv,spId,col,t){
+  const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,48,48);
+  const r=4.2,n=7;
+  const pts=[];
+  for(let i=0;i<n;i++)
+    pts.push({x:43-i*6,y:24+Math.sin(t*1.8+i*0.7)*10*(1-i/10)});
+  // body skip i=0
+  for(let i=n-1;i>=1;i--){
+    const p=pts[i],sc=getSegColors(spId,i,n,col),sz=r*(1-i/n*0.32);
+    ctx.beginPath();ctx.arc(p.x,p.y,sz,0,Math.PI*2);ctx.fillStyle=sc.body;ctx.fill();
+    ctx.beginPath();ctx.arc(p.x,p.y,sz*0.6,0,Math.PI*2);ctx.fillStyle=sc.inner;ctx.fill();
+  }
+  const ang=Math.atan2(pts[0].y-pts[1].y,pts[0].x-pts[1].x);
+  drawSnakeHead(ctx,spId,pts[0].x,pts[0].y,r*2.0,ang,col,1.0,t);
+}
+function drawSnakePreview(){
+  const cvs=document.getElementById('snakePrev');if(!cvs)return;
+  const W=cvs.width,H=cvs.height;
+  const ctx=cvs.getContext('2d');ctx.clearRect(0,0,W,H);
+  const col=sColors[selId]||SPECIES.find(s=>s.id===selId).defCol;
+  const t=previewT;
+  const r=10,npts=12;
+  const pts=[];
+  for(let i=0;i<npts;i++){
+    pts.push({x:W-20-i*11, y:H/2+Math.sin(t*1.8+i*0.65)*16*(1-i/18)});
+  }
+  // body segments tail→head — SKIP i=0 (head drawn by drawSnakeHead)
+  for(let i=npts-1;i>=1;i--){
+    const pt=pts[i],sc2=getSegColors(selId,i,npts,col);
+    const sz=r*(1-i/npts*0.38);
+    ctx.beginPath();ctx.arc(pt.x,pt.y,sz,0,Math.PI*2);ctx.fillStyle=sc2.body;ctx.fill();
+    ctx.beginPath();ctx.arc(pt.x,pt.y,sz*0.65,0,Math.PI*2);ctx.fillStyle=sc2.inner;ctx.fill();
+    ctx.beginPath();ctx.arc(pt.x,pt.y,sz*0.85,0,Math.PI*2);ctx.strokeStyle=sc2.border;ctx.lineWidth=1;ctx.stroke();
+    ctx.beginPath();ctx.arc(pt.x-sz*0.25,pt.y-sz*0.25,sz*0.22,0,Math.PI*2);ctx.fillStyle=sc2.shine;ctx.fill();
+  }
+  // head with correct facing angle + tongue animation
+  const ang=Math.atan2(pts[0].y-pts[1].y,pts[0].x-pts[1].x);
+  drawSnakeHead(ctx,selId,pts[0].x,pts[0].y,r*2.4,ang,col,1.0,t);
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+// ── GLOBAL FULLSCREEN ────────────────────────────────────────────────────────
+function toggleFS(){
+  const el=document.documentElement;
+  if(!document.fullscreenElement&&!document.webkitFullscreenElement){
+    const req=el.requestFullscreen||el.webkitRequestFullscreen||el.mozRequestFullScreen||el.msRequestFullscreen;
+    if(req)req.call(el);
+    document.querySelectorAll('.fs-btn').forEach(b=>b.textContent='⛶ EXIT');
+  }else{
+    const ex=document.exitFullscreen||document.webkitExitFullscreen||document.mozCancelFullScreen||document.msExitFullscreen;
+    if(ex)ex.call(document);
+    document.querySelectorAll('.fs-btn').forEach(b=>b.textContent='⛶ FULL');
+  }
+}
+['fullscreenchange','webkitfullscreenchange'].forEach(e=>{
+  document.addEventListener(e,()=>{
+    const full=!!(document.fullscreenElement||document.webkitFullscreenElement);
+    document.querySelectorAll('.fs-btn').forEach(b=>b.textContent=full?'⛶ EXIT':'⛶ FULL');
+  });
+});
+document.getElementById('menuBest').textContent=gs.best.toLocaleString();
+// ── PLAYER NAME ──────────────────────────────────────────────────────────────
+const _ni=document.getElementById('playerNameInput');
+if(_ni){
+  _ni.value=gs.playerName||'';
+  _ni.addEventListener('input',()=>{
+    gs.playerName=_ni.value.toUpperCase().replace(/[^A-Z0-9 _\-]/g,'').slice(0,12);
+    _ni.value=gs.playerName;
+    try{localStorage.setItem('snakeULTRA2',JSON.stringify(gs));}catch(e){}
+  });
+}
+document.querySelectorAll('.diff-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');currentDiff=btn.dataset.diff;
+  });
+});
+document.getElementById('playBtn').onclick=()=>{
+  document.getElementById('menuScreen').classList.remove('active');
+  document.getElementById('selectScreen').classList.add('active');
+  buildSelectScreen();
+};
+// How To Play screen navigation
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+document.getElementById('howBtn').onclick=()=>{stopPreviewAnim();showScreen('howScreen');};
+document.getElementById('howBackBtn').onclick=()=>showScreen('menuScreen');
+document.getElementById('howPlayBtn').onclick=()=>{
+  showScreen('selectScreen');
+  buildSelectScreen();
+};
+document.getElementById('backBtn').onclick=()=>{
+  document.getElementById('selectScreen').classList.remove('active');
+  document.getElementById('menuScreen').classList.add('active');
+};
+document.getElementById('fightBtn').onclick=()=>{stopPreviewAnim();startGame();};
+document.getElementById('againBtn').onclick=()=>{
+  document.getElementById('gameOverModal').classList.remove('active');
+  startGame();
+};
+document.getElementById('menuBtn2').onclick=()=>{
+  document.getElementById('gameOverModal').classList.remove('active');
+  document.getElementById('gameScreen').classList.remove('active');
+  document.getElementById('selectScreen').classList.remove('active');
+  document.getElementById('menuScreen').classList.add('active');
+  // ── GLOBAL FULLSCREEN ────────────────────────────────────────────────────────
+function toggleFS(){
+  const el=document.documentElement;
+  if(!document.fullscreenElement&&!document.webkitFullscreenElement){
+    const req=el.requestFullscreen||el.webkitRequestFullscreen||el.mozRequestFullScreen||el.msRequestFullscreen;
+    if(req)req.call(el);
+    document.querySelectorAll('.fs-btn').forEach(b=>b.textContent='⛶ EXIT');
+  }else{
+    const ex=document.exitFullscreen||document.webkitExitFullscreen||document.mozCancelFullScreen||document.msExitFullscreen;
+    if(ex)ex.call(document);
+    document.querySelectorAll('.fs-btn').forEach(b=>b.textContent='⛶ FULL');
+  }
+}
+['fullscreenchange','webkitfullscreenchange'].forEach(e=>{
+  document.addEventListener(e,()=>{
+    const full=!!(document.fullscreenElement||document.webkitFullscreenElement);
+    document.querySelectorAll('.fs-btn').forEach(b=>b.textContent=full?'⛶ EXIT':'⛶ FULL');
+  });
+});
+document.getElementById('menuBest').textContent=gs.best.toLocaleString();
+// ── PLAYER NAME ──────────────────────────────────────────────────────────────
+const _ni=document.getElementById('playerNameInput');
+if(_ni){
+  _ni.value=gs.playerName||'';
+  _ni.addEventListener('input',()=>{
+    gs.playerName=_ni.value.toUpperCase().replace(/[^A-Z0-9 _\-]/g,'').slice(0,12);
+    _ni.value=gs.playerName;
+    try{localStorage.setItem('snakeULTRA2',JSON.stringify(gs));}catch(e){}
+  });
+}
+};
+function startGame(){
+  document.getElementById('selectScreen').classList.remove('active');
+  document.getElementById('gameScreen').classList.add('active');
+  document.getElementById('gameOverModal').classList.remove('active');
+  document.getElementById('pauseOverlay').classList.remove('show');
+  if(game&&game.gameOver===false){game.gameOver=true;}
+  game=new Game();game.start();
+}
+window.addEventListener('resize',()=>{if(game)game.resize();});
+// Handle orientation change explicitly — fires before resize on mobile
+window.addEventListener('orientationchange',()=>{
+  setTimeout(()=>{
+    if(game)game.resize();
+    // Force CSS reflow so media queries re-evaluate
+    document.documentElement.style.display='none';
+    document.documentElement.offsetHeight; // trigger reflow
+    document.documentElement.style.display='';
+  },200); // delay lets browser finish rotating
+});
+if(screen.orientation){
+  screen.orientation.addEventListener('change',()=>{
+    setTimeout(()=>{if(game)game.resize();},200);
+  });
+}
+</script>
+</body>
+</html>
